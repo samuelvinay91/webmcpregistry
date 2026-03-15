@@ -1,0 +1,44 @@
+name: Bundle Size
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  size:
+    name: Report Bundle Size
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all packages
+        run: pnpm build
+
+      - name: Report sizes
+        run: |
+          echo "## Bundle Sizes" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | ESM | CJS | DTS |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|-----|-----|-----|" >> $GITHUB_STEP_SUMMARY
+          for pkg in packages/*/; do
+            name=$(node -p "require('./${pkg}package.json').name" 2>/dev/null || continue)
+            if [ -d "${pkg}dist" ]; then
+              esm=$(find "${pkg}dist" -name "*.js" ! -name "*.cjs" ! -name "*.global.*" -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}' || echo "0")
+              cjs=$(find "${pkg}dist" -name "*.cjs" -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}' || echo "0")
+              dts=$(find "${pkg}dist" -name "*.d.ts" -o -name "*.d.cts" -exec wc -c {} + 2>/dev/null | tail -1 | awk '{print $1}' || echo "0")
+              echo "| ${name} | ${esm}B | ${cjs}B | ${dts}B |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done

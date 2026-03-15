@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": [
+    "@changesets/changelog-github",
+    { "repo": "samuelvinay91/webmcpregistry" }
+  ],
+  "commit": false,
+  "fixed": [],
+  "linked": [
+    ["@webmcpregistry/core", "@webmcpregistry/react", "@webmcpregistry/nextjs", "@webmcpregistry/vue", "@webmcpregistry/angular", "@webmcpregistry/svelte", "@webmcpregistry/browser"]
+  ],
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": ["@webmcpregistry/docs"]
+}
