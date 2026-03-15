@@ -41,5 +41,14 @@
     "contract-testing",
     "mutation-testing",
     "schema-driven"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samuelvinay91/webmcpregistry.git",
+    "directory": "packages/testing"
+  },
+  "bugs": {
+    "url": "https://github.com/samuelvinay91/webmcpregistry/issues"
+  },
+  "homepage": "https://github.com/samuelvinay91/webmcpregistry#readme"
 }

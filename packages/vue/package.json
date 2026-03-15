@@ -44,5 +44,14 @@
     "vue",
     "vue3",
     "ai-agents"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samuelvinay91/webmcpregistry.git",
+    "directory": "packages/vue"
+  },
+  "bugs": {
+    "url": "https://github.com/samuelvinay91/webmcpregistry/issues"
+  },
+  "homepage": "https://github.com/samuelvinay91/webmcpregistry#readme"
 }

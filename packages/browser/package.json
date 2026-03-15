@@ -40,5 +40,14 @@
     "script-tag",
     "ai-agents",
     "no-framework"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samuelvinay91/webmcpregistry.git",
+    "directory": "packages/browser"
+  },
+  "bugs": {
+    "url": "https://github.com/samuelvinay91/webmcpregistry/issues"
+  },
+  "homepage": "https://github.com/samuelvinay91/webmcpregistry#readme"
 }

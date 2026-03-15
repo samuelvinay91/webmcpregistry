@@ -42,5 +42,14 @@
     "ai-agents",
     "tool-calling",
     "benchmark"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samuelvinay91/webmcpregistry.git",
+    "directory": "packages/evals"
+  },
+  "bugs": {
+    "url": "https://github.com/samuelvinay91/webmcpregistry/issues"
+  },
+  "homepage": "https://github.com/samuelvinay91/webmcpregistry#readme"
 }

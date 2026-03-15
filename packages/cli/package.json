@@ -37,5 +37,14 @@
     "scanner",
     "validator",
     "ai-agents"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/samuelvinay91/webmcpregistry.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/samuelvinay91/webmcpregistry/issues"
+  },
+  "homepage": "https://github.com/samuelvinay91/webmcpregistry#readme"
 }
