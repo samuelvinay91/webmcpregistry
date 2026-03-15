@@ -1,6 +1,6 @@
 {
   "name": "@webmcpregistry/browser",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Drop-in <script> tag to make any website WebMCP-ready — zero framework required",
   "license": "Apache-2.0",
   "author": "RAPHATECH OÜ",
@@ -15,7 +15,9 @@
       "require": "./dist/auto.global.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -30,5 +32,10 @@
     "vitest": "^3.0.0",
     "typescript": "^5.7.0"
   },
-  "keywords": ["webmcp", "script-tag", "ai-agents", "no-framework"]
+  "keywords": [
+    "webmcp",
+    "script-tag",
+    "ai-agents",
+    "no-framework"
+  ]
 }

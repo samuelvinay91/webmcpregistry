@@ -1,6 +1,6 @@
 {
   "name": "@webmcpregistry/nextjs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Next.js App Router adapter for WebMCP",
   "license": "Apache-2.0",
   "author": "RAPHATECH OÜ",
@@ -15,7 +15,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -38,5 +40,10 @@
     "vitest": "^3.0.0",
     "typescript": "^5.7.0"
   },
-  "keywords": ["webmcp", "nextjs", "app-router", "ai-agents"]
+  "keywords": [
+    "webmcp",
+    "nextjs",
+    "app-router",
+    "ai-agents"
+  ]
 }

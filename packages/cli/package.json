@@ -1,6 +1,6 @@
 {
   "name": "@webmcpregistry/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "CLI tool to test and validate WebMCP readiness of any website",
   "license": "Apache-2.0",
   "author": "RAPHATECH OÜ",
@@ -8,7 +8,9 @@
   "bin": {
     "webmcp": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -26,5 +28,11 @@
     "vitest": "^3.0.0",
     "typescript": "^5.7.0"
   },
-  "keywords": ["webmcp", "cli", "scanner", "validator", "ai-agents"]
+  "keywords": [
+    "webmcp",
+    "cli",
+    "scanner",
+    "validator",
+    "ai-agents"
+  ]
 }

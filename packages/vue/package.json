@@ -1,6 +1,6 @@
 {
   "name": "@webmcpregistry/vue",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Vue 3 plugin and composables for WebMCP tool registration",
   "license": "Apache-2.0",
   "author": "RAPHATECH OÜ",
@@ -15,7 +15,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -34,5 +36,10 @@
     "vitest": "^3.0.0",
     "typescript": "^5.7.0"
   },
-  "keywords": ["webmcp", "vue", "vue3", "ai-agents"]
+  "keywords": [
+    "webmcp",
+    "vue",
+    "vue3",
+    "ai-agents"
+  ]
 }

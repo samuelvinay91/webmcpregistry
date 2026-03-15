@@ -1,6 +1,6 @@
 {
   "name": "@webmcpregistry/mcp-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server that bridges Anthropic's MCP to WebMCP — lets Claude/ChatGPT call website tools directly",
   "license": "Apache-2.0",
   "author": "RAPHATECH OÜ",
