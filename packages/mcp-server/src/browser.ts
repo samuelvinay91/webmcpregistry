@@ -44,7 +44,6 @@ export class BrowserManager {
   private async ensureContext(): Promise<BrowserContext> {
     if (this.context) return this.context
 
-    // Dynamic import — Playwright is a peer dependency
     const pw = await import('playwright')
     const browserType = pw[this.config.browserType]
 

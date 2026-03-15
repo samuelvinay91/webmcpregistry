@@ -103,11 +103,31 @@ if (args.urls.length === 0) {
   process.exit(1)
 }
 
-const gateway = new WebMCPGateway({
-  urls: args.urls,
-  headless: args.headless,
-  storageState: args.storageState || undefined,
-  browserType: args.browserType,
-})
+async function main() {
+  // Auto-install browser binary if missing
+  try {
+    const pw = await import('playwright')
+    // Quick check if browser is available by trying to get executable path
+    const browserType = pw[args.browserType]
+    browserType.executablePath()
+  } catch {
+    console.error(`[WebMCP] Installing ${args.browserType} browser...`)
+    const { execSync } = await import('child_process')
+    try {
+      execSync(`npx playwright install ${args.browserType} --with-deps`, { stdio: 'inherit' })
+    } catch {
+      console.error(`[WebMCP] Warning: could not auto-install browser. Run: npx playwright install ${args.browserType}`)
+    }
+  }
 
-startMCPServer(gateway)
+  const gateway = new WebMCPGateway({
+    urls: args.urls,
+    headless: args.headless,
+    storageState: args.storageState || undefined,
+    browserType: args.browserType,
+  })
+
+  await startMCPServer(gateway)
+}
+
+main()
