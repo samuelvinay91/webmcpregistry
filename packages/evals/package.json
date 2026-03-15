@@ -1,0 +1,34 @@
+{
+  "name": "@webmcpregistry/evals",
+  "version": "0.1.0",
+  "description": "Evaluate AI agent tool-calling accuracy against WebMCP tool definitions",
+  "license": "Apache-2.0",
+  "author": "RAPHATECH OÜ",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@webmcpregistry/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "vitest": "^3.0.0",
+    "typescript": "^5.7.0"
+  },
+  "keywords": ["webmcp", "evals", "evaluation", "ai-agents", "tool-calling", "benchmark"]
+}

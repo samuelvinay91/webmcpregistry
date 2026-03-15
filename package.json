@@ -1,0 +1,22 @@
+{
+  "name": "webmcpregistry",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The SDK that makes any website WebMCP-ready",
+  "author": "RAPHATECH OÜ",
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@10.30.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "prettier": "^3.4.0",
+    "typescript": "^5.7.0"
+  }
+}

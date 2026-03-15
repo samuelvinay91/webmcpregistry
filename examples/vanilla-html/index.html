@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebMCP Example — Vanilla HTML Bookstore</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem; background: #050810; color: #e8edf5; }
+    h1 { margin-bottom: 0.5rem; }
+    p.subtitle { color: #8fa3bf; margin-bottom: 2rem; }
+    .card { background: #111827; border: 1px solid #1e2d45; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    h2 { font-size: 1.1rem; margin-bottom: 1rem; color: #00d4ff; }
+    label { display: block; margin-bottom: 0.5rem; color: #8fa3bf; font-size: 0.9rem; }
+    input, select, textarea { width: 100%; padding: 0.5rem; border: 1px solid #1e2d45; border-radius: 4px; background: #080d1a; color: #e8edf5; margin-bottom: 1rem; }
+    button { background: #00d4ff; color: #050810; border: none; padding: 0.6rem 1.5rem; border-radius: 4px; cursor: pointer; font-weight: 600; }
+    button:hover { opacity: 0.9; }
+    .status { margin-top: 2rem; padding: 1rem; border-radius: 4px; background: #0a1628; border: 1px dashed #1e2d45; }
+    .status h3 { color: #00ff9d; margin-bottom: 0.5rem; }
+    code { background: #1a2236; padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.85rem; }
+    pre { background: #1a2236; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.85rem; color: #8fa3bf; }
+  </style>
+</head>
+<body>
+  <h1>📚 BookShelf — WebMCP Demo</h1>
+  <p class="subtitle">A demo bookstore using WebMCP declarative attributes + the script tag SDK</p>
+
+  <!-- ============================================================ -->
+  <!-- Declarative WebMCP: form with toolname/tooldescription attrs -->
+  <!-- ============================================================ -->
+
+  <div class="card">
+    <h2>Search Books (Declarative WebMCP)</h2>
+    <form
+      toolname="search_books"
+      tooldescription="Search the bookstore catalog by title, author, or keyword">
+      <label for="query">Search query</label>
+      <input
+        id="query"
+        name="query"
+        type="text"
+        placeholder="e.g., science fiction"
+        toolparamdescription="Search keywords for title, author, or genre"
+        required />
+
+      <label for="genre">Genre filter</label>
+      <select id="genre" name="genre" toolparamdescription="Optional genre filter">
+        <option value="">All genres</option>
+        <option value="fiction">Fiction</option>
+        <option value="science-fiction">Science Fiction</option>
+        <option value="non-fiction">Non-Fiction</option>
+        <option value="biography">Biography</option>
+      </select>
+
+      <button type="submit">Search</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Add to Cart (Declarative WebMCP)</h2>
+    <form
+      toolname="add_to_cart"
+      tooldescription="Add a book to the shopping cart by its ISBN number">
+      <label for="isbn">ISBN</label>
+      <input
+        id="isbn"
+        name="isbn"
+        type="text"
+        placeholder="978-0-123456-78-9"
+        toolparamdescription="The book's ISBN number"
+        required />
+
+      <label for="quantity">Quantity</label>
+      <input
+        id="quantity"
+        name="quantity"
+        type="number"
+        value="1"
+        min="1"
+        max="10"
+        toolparamdescription="Number of copies to add" />
+
+      <button type="submit">Add to Cart</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Leave a Review</h2>
+    <form
+      toolname="submit_review"
+      tooldescription="Submit a star rating and text review for a book">
+      <label for="book_id">Book ID</label>
+      <input id="book_id" name="book_id" type="text" placeholder="book-123" required />
+
+      <label for="rating">Rating (1-5)</label>
+      <input id="rating" name="rating" type="number" min="1" max="5" required />
+
+      <label for="review_text">Review</label>
+      <textarea id="review_text" name="review_text" rows="3" placeholder="Write your review..."></textarea>
+
+      <button type="submit">Submit Review</button>
+    </form>
+  </div>
+
+  <!-- Status panel showing registered tools -->
+  <div class="status" id="status">
+    <h3>WebMCP Status</h3>
+    <p>Loading SDK...</p>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- Load the WebMCP Registry SDK — auto mode detects all tools   -->
+  <!-- ============================================================ -->
+  <script type="module">
+    import { initialize, getRegisteredTools } from '../../packages/core/src/index.ts'
+
+    // For this demo, we import directly from source.
+    // In production, you'd use:
+    // <script src="https://cdn.webmcpregistry.com/v1/auto.js" data-mode="auto"></script>
+
+    const result = initialize({ mode: 'auto', polyfill: true })
+
+    const statusEl = document.getElementById('status')
+    const tools = getRegisteredTools()
+
+    statusEl.innerHTML = `
+      <h3>WebMCP Status: Active</h3>
+      <p><strong>${tools.length}</strong> tools registered (polyfill: ${result.polyfilled ? 'yes' : 'no'})</p>
+      <pre>${JSON.stringify(tools.map(t => ({ name: t.name, description: t.description, safety: t.safetyLevel })), null, 2)}</pre>
+    `
+  </script>
+</body>
+</html>
