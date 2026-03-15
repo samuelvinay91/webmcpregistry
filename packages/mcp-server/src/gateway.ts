@@ -1,264 +1,256 @@
 /**
- * WebMCP Gateway — discovers and proxies WebMCP tools from websites.
+ * WebMCP Gateway — the complete MCP server that discovers, executes, and validates
+ * WebMCP tools on any website using Playwright.
  *
- * This module fetches a website, extracts WebMCP tool definitions from the HTML,
- * and makes them available as callable MCP tools.
+ * Architecture:
+ * ┌──────────────┐     MCP (stdio)    ┌──────────────────────────────────────┐
+ * │ Claude /     │◄──────────────────►│ WebMCP Gateway                       │
+ * │ ChatGPT /   │                     │                                      │
+ * │ Cursor      │  tools/list         │ ┌──────────┐  ┌──────────────────┐  │
+ * │             │◄────────────────────│ │ Discovery │  │ Playwright       │  │
+ * │             │                     │ │ Engine    │──│ Browser Manager  │  │
+ * │             │  tools/call         │ └──────────┘  │                  │  │
+ * │             │────────────────────►│ ┌──────────┐  │ Page per URL     │  │
+ * │             │                     │ │ Executor  │──│ navigator.       │  │
+ * │             │◄────────────────────│ │           │  │ modelContext     │  │
+ * └──────────────┘  result            │ └──────────┘  └──────────────────┘  │
+ *                                     │ ┌──────────┐                        │
+ *                                     │ │ Validator │ (@webmcpregistry/core)│
+ *                                     │ └──────────┘                        │
+ *                                     └──────────────────────────────────────┘
  */
 
-import type { ToolDefinition, ToolInputSchema } from '@webmcpregistry/core'
+import { BrowserManager, type BrowserConfig } from './browser.js'
+import { discoverTools, type DiscoveredTool } from './discovery.js'
+import { executeToolForMCP } from './executor.js'
+import {
+  validateTools,
+  runSecurityScan,
+  type ValidationResult,
+  type SecurityReport,
+} from '@webmcpregistry/core'
 
-export interface GatewayConfig {
-  /** The URL(s) to discover WebMCP tools from. */
+export interface GatewayConfig extends BrowserConfig {
+  /** URLs to discover WebMCP tools from. */
   urls: string[]
-  /** User agent string for fetching. */
-  userAgent?: string
-  /** Timeout for fetching pages (ms). */
-  timeout?: number
 }
 
-export interface DiscoveredTool {
-  /** The tool definition extracted from the page. */
-  definition: ToolDefinition
-  /** The URL where this tool was discovered. */
-  sourceUrl: string
-  /** Whether this was found via declarative attributes or JS detection. */
-  discoveryMethod: 'declarative' | 'imperative' | 'inferred'
-}
+export { type DiscoveredTool } from './discovery.js'
 
-/**
- * WebMCP Gateway — discovers tools from websites and serves them as MCP tools.
- */
 export class WebMCPGateway {
   private config: GatewayConfig
-  private discoveredTools: DiscoveredTool[] = []
+  private browser: BrowserManager
+  private tools: DiscoveredTool[] = []
+  private toolPageMap = new Map<string, string>() // toolName → url
+  private initialized = false
 
   constructor(config: GatewayConfig) {
-    this.config = {
-      userAgent: 'WebMCPGateway/0.1.0 (+https://webmcpregistry.com)',
-      timeout: 15000,
-      ...config,
-    }
+    this.config = config
+    this.browser = new BrowserManager(config)
   }
 
   /**
    * Discover WebMCP tools from all configured URLs.
+   * Launches browser, navigates to each URL, and extracts tools.
    */
   async discover(): Promise<DiscoveredTool[]> {
-    this.discoveredTools = []
+    this.tools = []
+    this.toolPageMap.clear()
 
     for (const url of this.config.urls) {
       try {
-        const tools = await this.discoverFromUrl(url)
-        this.discoveredTools.push(...tools)
+        const page = await this.browser.getPage(url)
+        const discovered = await discoverTools(page)
+
+        for (const tool of discovered) {
+          // Deduplicate by name (keep first occurrence)
+          if (!this.toolPageMap.has(tool.definition.name)) {
+            this.tools.push(tool)
+            this.toolPageMap.set(tool.definition.name, url)
+          }
+        }
       } catch (err) {
-        console.error(`[WebMCP Gateway] Failed to discover tools from ${url}:`, err)
+        console.error(`[WebMCP] Failed to discover tools from ${url}:`, err)
       }
     }
 
-    return this.discoveredTools
+    this.initialized = true
+    return this.tools
   }
 
   /**
    * Get all discovered tools.
    */
-  getTools(): DiscoveredTool[] {
-    return this.discoveredTools
+  getDiscoveredTools(): DiscoveredTool[] {
+    return this.tools
   }
 
   /**
-   * Get MCP-compatible tool definitions (for the MCP protocol response).
+   * Get tools formatted for MCP tools/list response.
    */
-  getMCPToolDefinitions(): Array<{
-    name: string
-    description: string
-    inputSchema: ToolInputSchema & { type: 'object' }
-  }> {
-    return this.discoveredTools.map((dt) => ({
-      name: dt.definition.name,
-      description: `[${dt.sourceUrl}] ${dt.definition.description}`,
-      inputSchema: dt.definition.inputSchema,
-    }))
+  getMCPTools(): Array<{ name: string; description: string; inputSchema: object }> {
+    // Include our built-in meta-tools alongside discovered tools
+    return [
+      ...this.tools.map((dt) => ({
+        name: dt.definition.name,
+        description: dt.definition.description,
+        inputSchema: dt.definition.inputSchema,
+      })),
+      // Meta-tool: re-discover tools (useful if page state changes)
+      {
+        name: 'webmcp_rediscover',
+        description: 'Re-scan all configured URLs to discover new or changed WebMCP tools',
+        inputSchema: { type: 'object' as const, properties: {} },
+      },
+      // Meta-tool: validate all tools
+      {
+        name: 'webmcp_validate',
+        description: 'Run validation and security scanning on all discovered WebMCP tools',
+        inputSchema: { type: 'object' as const, properties: {} },
+      },
+      // Meta-tool: get discovery report
+      {
+        name: 'webmcp_report',
+        description: 'Get a detailed report of all discovered WebMCP tools with their sources and capabilities',
+        inputSchema: { type: 'object' as const, properties: {} },
+      },
+    ]
   }
 
-  private async discoverFromUrl(url: string): Promise<DiscoveredTool[]> {
-    const html = await this.fetchPage(url)
-    if (!html) return []
-
-    const tools: DiscoveredTool[] = []
-
-    // 1. Detect declarative tools (toolname attributes on forms)
-    tools.push(...this.extractDeclarativeTools(html, url))
-
-    // 2. Detect imperative tools (registerTool calls in scripts)
-    tools.push(...this.extractImperativeTools(html, url))
-
-    // 3. Infer tools from page structure (forms, buttons, APIs)
-    if (tools.length === 0) {
-      tools.push(...this.inferToolsFromStructure(html, url))
-    }
-
-    return tools
-  }
-
-  private async fetchPage(url: string): Promise<string | null> {
-    try {
-      const res = await fetch(url, {
-        headers: {
-          'User-Agent': this.config.userAgent!,
-          Accept: 'text/html',
-        },
-        signal: AbortSignal.timeout(this.config.timeout!),
-        redirect: 'follow',
-      })
-      if (!res.ok) return null
-      return await res.text()
-    } catch {
-      return null
-    }
-  }
-
-  private extractDeclarativeTools(html: string, url: string): DiscoveredTool[] {
-    const tools: DiscoveredTool[] = []
-    const regex = /toolname=["']([^"']+)["']/gi
-    let match
-
-    while ((match = regex.exec(html)) !== null) {
-      const name = match[1]!
-      const nearby = html.slice(Math.max(0, match.index - 500), match.index + 500)
-      const descMatch = nearby.match(/tooldescription=["']([^"']+)["']/i)
-
-      const inputSchema = this.extractSchemaFromHTML(nearby)
-
-      tools.push({
-        definition: {
-          name,
-          description: descMatch?.[1] ?? `Tool: ${name}`,
-          inputSchema,
-          safetyLevel: this.inferSafety(name, nearby),
-        },
-        sourceUrl: url,
-        discoveryMethod: 'declarative',
-      })
-    }
-
-    return tools
-  }
-
-  private extractImperativeTools(html: string, url: string): DiscoveredTool[] {
-    const tools: DiscoveredTool[] = []
-    const regex = /registerTool\s*\(\s*\{[^}]*name:\s*["']([^"']+)["']/gi
-    let match
-
-    while ((match = regex.exec(html)) !== null) {
-      const name = match[1]!
-      // Try to extract description from nearby code
-      const nearby = html.slice(match.index, match.index + 500)
-      const descMatch = nearby.match(/description:\s*["']([^"']+)["']/i)
-
-      tools.push({
-        definition: {
-          name,
-          description: descMatch?.[1] ?? `Registered tool: ${name}`,
-          inputSchema: { type: 'object', properties: {} },
-          safetyLevel: this.inferSafety(name, nearby),
-        },
-        sourceUrl: url,
-        discoveryMethod: 'imperative',
-      })
-    }
-
-    return tools
-  }
-
-  private inferToolsFromStructure(html: string, url: string): DiscoveredTool[] {
-    const tools: DiscoveredTool[] = []
-
-    // Find forms and infer tools from them
-    const formRegex = /<form[^>]*>([\s\S]*?)<\/form>/gi
-    let match
-
-    while ((match = formRegex.exec(html)) !== null) {
-      const formHtml = match[0]!
-      const formContent = match[1]!
-
-      // Try to get form identity
-      const idMatch = formHtml.match(/id=["']([^"']+)["']/i)
-      const nameMatch = formHtml.match(/name=["']([^"']+)["']/i)
-      const actionMatch = formHtml.match(/action=["']([^"']+)["']/i)
-
-      const formId = idMatch?.[1] ?? nameMatch?.[1] ?? actionMatch?.[1]
-      if (!formId) continue
-
-      const toolName = this.toSnakeCase(formId)
-      if (toolName.length < 3) continue
-
-      // Extract submit button text for description
-      const submitMatch = formContent.match(/<button[^>]*>([\s\S]*?)<\/button>/i)
-      const submitText = submitMatch?.[1]?.replace(/<[^>]+>/g, '').trim() ?? formId
-
-      const inputSchema = this.extractSchemaFromHTML(formContent)
-
-      tools.push({
-        definition: {
-          name: toolName,
-          description: `Submit form: ${submitText}`,
-          inputSchema,
-          safetyLevel: this.inferSafety(toolName, formHtml),
-        },
-        sourceUrl: url,
-        discoveryMethod: 'inferred',
-      })
-    }
-
-    return tools
-  }
-
-  private extractSchemaFromHTML(html: string): ToolInputSchema {
-    const properties: Record<string, { type: 'string'; description?: string }> = {}
-    const required: string[] = []
-
-    const inputRegex = /<input[^>]*name=["']([^"']+)["'][^>]*>/gi
-    let match
-
-    while ((match = inputRegex.exec(html)) !== null) {
-      const name = match[1]!
-      if (['submit', 'hidden', 'button'].some((t) => match![0]!.includes(`type="${t}"`))) continue
-
-      const descMatch = match[0]!.match(/(?:placeholder|aria-label|toolparamdescription)=["']([^"']+)["']/i)
-
-      properties[name] = {
-        type: 'string',
-        description: descMatch?.[1],
-      }
-
-      if (match[0]!.includes('required')) {
-        required.push(name)
+  /**
+   * Call a tool — either a discovered WebMCP tool or a meta-tool.
+   */
+  async callTool(
+    name: string,
+    args: Record<string, unknown>,
+  ): Promise<{ content: Array<{ type: string; text: string }>; isError?: boolean }> {
+    // Handle meta-tools
+    if (name === 'webmcp_rediscover') {
+      const tools = await this.discover()
+      return {
+        content: [{
+          type: 'text',
+          text: `Re-discovered ${tools.length} tool(s) from ${this.config.urls.length} URL(s):\n${tools.map((t) => `  - ${t.definition.name} (${t.discoveryMethod}, ${t.executable ? 'executable' : 'definition only'})`).join('\n')}`,
+        }],
       }
     }
 
-    return {
-      type: 'object',
-      properties,
-      required: required.length > 0 ? required : undefined,
+    if (name === 'webmcp_validate') {
+      return this.handleValidation()
     }
+
+    if (name === 'webmcp_report') {
+      return this.handleReport()
+    }
+
+    // Handle discovered WebMCP tools
+    const url = this.toolPageMap.get(name)
+    if (!url) {
+      return {
+        content: [{
+          type: 'text',
+          text: `Tool "${name}" not found. Available tools: ${this.tools.map((t) => t.definition.name).join(', ')}`,
+        }],
+        isError: true,
+      }
+    }
+
+    const tool = this.tools.find((t) => t.definition.name === name)
+    if (!tool?.executable) {
+      return {
+        content: [{
+          type: 'text',
+          text: `Tool "${name}" was discovered from HTML but is not executable (no live handler in browser). It was found via ${tool?.discoveryMethod} at ${url}.\n\nDefinition:\n${JSON.stringify(tool?.definition, null, 2)}`,
+        }],
+      }
+    }
+
+    // Execute in browser
+    const page = await this.browser.getPage(url)
+    return executeToolForMCP(page, name, args)
   }
 
-  private inferSafety(name: string, context: string): 'read' | 'write' | 'danger' {
-    const combined = `${name} ${context}`.toLowerCase()
-    const dangerKw = ['delete', 'remove', 'destroy', 'purchase', 'pay', 'checkout', 'transfer']
-    const writeKw = ['add', 'create', 'update', 'edit', 'save', 'submit', 'post', 'send']
-    if (dangerKw.some((k) => combined.includes(k))) return 'danger'
-    if (writeKw.some((k) => combined.includes(k))) return 'write'
-    return 'read'
+  /**
+   * Validate all discovered tools and return results.
+   */
+  private handleValidation(): { content: Array<{ type: string; text: string }> } {
+    const definitions = this.tools.map((t) => t.definition)
+    const validation: ValidationResult = validateTools(definitions)
+    const security: SecurityReport = runSecurityScan(definitions)
+
+    const lines: string[] = [
+      `WebMCP Validation Report`,
+      `========================`,
+      ``,
+      `Tools: ${definitions.length}`,
+      `Validation score: ${validation.score}/100 (${validation.valid ? 'PASS' : 'FAIL'})`,
+      `Security: ${security.status} (${security.score}/100)`,
+      ``,
+    ]
+
+    if (validation.issues.length > 0) {
+      lines.push(`Validation Issues:`)
+      for (const issue of validation.issues) {
+        lines.push(`  [${issue.severity.toUpperCase()}] ${issue.message}`)
+      }
+      lines.push(``)
+    }
+
+    if (security.findings.length > 0) {
+      lines.push(`Security Findings:`)
+      for (const finding of security.findings) {
+        lines.push(`  [${finding.severity.toUpperCase()}] ${finding.description}`)
+      }
+      lines.push(``)
+    }
+
+    if (validation.issues.length === 0 && security.findings.length === 0) {
+      lines.push(`All clear — no validation or security issues found.`)
+    }
+
+    return { content: [{ type: 'text', text: lines.join('\n') }] }
   }
 
-  private toSnakeCase(str: string): string {
-    return str
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9\s_-]/g, '')
-      .replace(/[\s-]+/g, '_')
-      .replace(/_+/g, '_')
-      .replace(/^_|_$/g, '')
+  /**
+   * Generate a detailed report of discovered tools.
+   */
+  private handleReport(): { content: Array<{ type: string; text: string }> } {
+    const lines: string[] = [
+      `WebMCP Discovery Report`,
+      `=======================`,
+      ``,
+      `URLs scanned: ${this.config.urls.join(', ')}`,
+      `Total tools: ${this.tools.length}`,
+      `Executable: ${this.tools.filter((t) => t.executable).length}`,
+      `Definition only: ${this.tools.filter((t) => !t.executable).length}`,
+      ``,
+    ]
+
+    for (const tool of this.tools) {
+      const d = tool.definition
+      lines.push(`--- ${d.name} ---`)
+      lines.push(`  Description: ${d.description}`)
+      lines.push(`  Safety: ${d.safetyLevel}`)
+      lines.push(`  Source: ${tool.sourceUrl}`)
+      lines.push(`  Discovery: ${tool.discoveryMethod}`)
+      lines.push(`  Executable: ${tool.executable}`)
+      const props = Object.keys(d.inputSchema.properties ?? {})
+      if (props.length > 0) {
+        lines.push(`  Inputs: ${props.join(', ')}`)
+        if (d.inputSchema.required?.length) {
+          lines.push(`  Required: ${d.inputSchema.required.join(', ')}`)
+        }
+      }
+      lines.push(``)
+    }
+
+    return { content: [{ type: 'text', text: lines.join('\n') }] }
+  }
+
+  /**
+   * Clean up — close browser.
+   */
+  async dispose(): Promise<void> {
+    await this.browser.dispose()
   }
 }

@@ -1,182 +1,70 @@
 /**
- * MCP Protocol handler — implements the MCP JSON-RPC protocol over stdio.
+ * MCP Protocol handler — uses the official @modelcontextprotocol/sdk.
  *
- * This is a lightweight, zero-dependency MCP server implementation
- * that reads JSON-RPC messages from stdin and writes responses to stdout.
- *
- * Protocol reference: https://modelcontextprotocol.io/specification
+ * Exposes the WebMCP Gateway as a proper MCP server that Claude Desktop,
+ * Cursor, VS Code, and any MCP client can connect to.
  */
 
+import { Server } from '@modelcontextprotocol/sdk/server/index.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+import {
+  ListToolsRequestSchema,
+  CallToolRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js'
 import type { WebMCPGateway } from './gateway.js'
 
-interface MCPRequest {
-  jsonrpc: '2.0'
-  id: number | string
-  method: string
-  params?: Record<string, unknown>
-}
-
-interface MCPResponse {
-  jsonrpc: '2.0'
-  id: number | string
-  result?: unknown
-  error?: { code: number; message: string; data?: unknown }
-}
-
-interface MCPNotification {
-  jsonrpc: '2.0'
-  method: string
-  params?: Record<string, unknown>
-}
-
 /**
- * Create an MCP protocol handler that bridges to a WebMCPGateway.
+ * Create and start an MCP server over stdio.
+ *
+ * This is what Claude Desktop / Cursor connects to.
  */
-export function createMCPProtocolHandler(gateway: WebMCPGateway) {
-  return {
-    /**
-     * Handle an incoming MCP JSON-RPC request.
-     */
-    async handleRequest(request: MCPRequest): Promise<MCPResponse> {
-      switch (request.method) {
-        case 'initialize':
-          return {
-            jsonrpc: '2.0',
-            id: request.id,
-            result: {
-              protocolVersion: '2024-11-05',
-              capabilities: {
-                tools: {},
-              },
-              serverInfo: {
-                name: 'webmcp-gateway',
-                version: '0.1.0',
-              },
-            },
-          }
-
-        case 'tools/list':
-          return {
-            jsonrpc: '2.0',
-            id: request.id,
-            result: {
-              tools: gateway.getMCPToolDefinitions(),
-            },
-          }
-
-        case 'tools/call': {
-          const toolName = request.params?.['name'] as string
-          const toolArgs = (request.params?.['arguments'] ?? {}) as Record<string, unknown>
-
-          const discoveredTool = gateway.getTools().find(
-            (t) => t.definition.name === toolName
-          )
-
-          if (!discoveredTool) {
-            return {
-              jsonrpc: '2.0',
-              id: request.id,
-              error: {
-                code: -32602,
-                message: `Tool "${toolName}" not found`,
-              },
-            }
-          }
-
-          // For now, return the tool info and args.
-          // Full execution requires a browser runtime (Playwright integration).
-          return {
-            jsonrpc: '2.0',
-            id: request.id,
-            result: {
-              content: [
-                {
-                  type: 'text',
-                  text: JSON.stringify({
-                    tool: toolName,
-                    source: discoveredTool.sourceUrl,
-                    discoveryMethod: discoveredTool.discoveryMethod,
-                    args: toolArgs,
-                    note: 'Tool discovered from WebMCP. Full execution requires browser runtime.',
-                    definition: {
-                      description: discoveredTool.definition.description,
-                      inputSchema: discoveredTool.definition.inputSchema,
-                      safetyLevel: discoveredTool.definition.safetyLevel,
-                    },
-                  }, null, 2),
-                },
-              ],
-            },
-          }
-        }
-
-        default:
-          return {
-            jsonrpc: '2.0',
-            id: request.id,
-            error: {
-              code: -32601,
-              message: `Method "${request.method}" not found`,
-            },
-          }
-      }
+export async function startMCPServer(gateway: WebMCPGateway): Promise<void> {
+  const server = new Server(
+    {
+      name: 'webmcp-gateway',
+      version: '0.2.0',
     },
-  }
-}
-
-/**
- * Run the MCP server over stdio (for Claude Desktop, Cursor, etc.).
- */
-export async function runStdioServer(gateway: WebMCPGateway): Promise<void> {
-  const handler = createMCPProtocolHandler(gateway)
+    {
+      capabilities: {
+        tools: {},
+      },
+    },
+  )
 
   // Discover tools on startup
   const tools = await gateway.discover()
-  console.error(`[WebMCP Gateway] Discovered ${tools.length} tools from ${tools.map(t => t.sourceUrl).filter((v, i, a) => a.indexOf(v) === i).length} URL(s)`)
+  console.error(`[WebMCP Gateway] Discovered ${tools.length} tool(s):`)
   for (const t of tools) {
-    console.error(`  - ${t.definition.name} (${t.discoveryMethod}) from ${t.sourceUrl}`)
+    const exec = t.executable ? 'executable' : 'definition only'
+    console.error(`  - ${t.definition.name} (${t.discoveryMethod}, ${exec})`)
   }
 
-  // Read JSON-RPC messages from stdin
-  let buffer = ''
-
-  process.stdin.setEncoding('utf-8')
-  process.stdin.on('data', async (chunk: string) => {
-    buffer += chunk
-
-    // Process complete messages (newline-delimited JSON)
-    const lines = buffer.split('\n')
-    buffer = lines.pop() ?? ''
-
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (!trimmed) continue
-
-      try {
-        const request = JSON.parse(trimmed) as MCPRequest
-
-        // Handle notifications (no id)
-        if (!('id' in request)) {
-          // Notifications like 'notifications/initialized' don't need a response
-          continue
-        }
-
-        const response = await handler.handleRequest(request)
-        process.stdout.write(JSON.stringify(response) + '\n')
-      } catch (err) {
-        const errorResponse: MCPResponse = {
-          jsonrpc: '2.0',
-          id: 0,
-          error: {
-            code: -32700,
-            message: `Parse error: ${err instanceof Error ? err.message : String(err)}`,
-          },
-        }
-        process.stdout.write(JSON.stringify(errorResponse) + '\n')
-      }
+  // tools/list — return discovered tools + meta-tools
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
+    return {
+      tools: gateway.getMCPTools(),
     }
   })
 
-  // Keep process alive
-  process.stdin.resume()
+  // tools/call — execute in browser or handle meta-tools
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    const name = request.params.name
+    const args = (request.params.arguments ?? {}) as Record<string, unknown>
+    return gateway.callTool(name, args)
+  })
+
+  // Connect via stdio
+  const transport = new StdioServerTransport()
+  await server.connect(transport)
+
+  // Clean up on exit
+  const cleanup = async () => {
+    await gateway.dispose()
+    process.exit(0)
+  }
+
+  process.on('SIGINT', cleanup)
+  process.on('SIGTERM', cleanup)
+
+  console.error(`[WebMCP Gateway] MCP server running on stdio. Ready for connections.`)
 }
