@@ -1,5 +1,30 @@
 # @webmcpregistry/evals
 
+## 0.2.1
+
+### Patch Changes
+
+- Production-grade fixes from comprehensive audit.
+
+  **Critical fixes:**
+  - Polyfill: Symbol-based native detection (replaces fragile prototype check)
+  - Polyfill: validates empty descriptions per W3C spec
+  - Types: `safetyLevel` and `inputSchema` now optional (spec-aligned)
+  - Detector: XSS fix via CSS.escape() in label selector
+  - MCP server: removed --with-deps from postinstall
+
+  **Framework fixes:**
+  - React hooks: fixed Strict Mode race condition
+  - Angular: removed SSR-unsafe module singleton
+  - Vue: DOM readiness check before auto-detection
+
+  **Testing:**
+  - 170 tests across 4 packages (up from 28)
+  - Conformance: 12/12 W3C spec scenarios pass
+
+- Updated dependencies []:
+  - @webmcpregistry/core@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@webmcpregistry/core",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Framework-agnostic WebMCP SDK core — polyfill, tool detection, registration, validation",
   "license": "Apache-2.0",
   "author": "RAPHATECH OÜ",

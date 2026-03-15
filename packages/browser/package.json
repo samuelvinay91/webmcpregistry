@@ -1,6 +1,6 @@
 {
   "name": "@webmcpregistry/browser",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Drop-in <script> tag to make any website WebMCP-ready — zero framework required",
   "license": "Apache-2.0",
   "author": "RAPHATECH OÜ",

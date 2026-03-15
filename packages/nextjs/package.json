@@ -1,6 +1,6 @@
 {
   "name": "@webmcpregistry/nextjs",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Next.js App Router adapter for WebMCP",
   "license": "Apache-2.0",
   "author": "RAPHATECH OÜ",

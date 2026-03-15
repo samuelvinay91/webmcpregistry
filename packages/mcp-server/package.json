@@ -1,6 +1,6 @@
 {
   "name": "@webmcpregistry/mcp-server",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "MCP server that discovers, executes, and validates WebMCP tools on any website — Playwright baked in",
   "license": "Apache-2.0",
   "author": "RAPHATECH OÜ",
@@ -18,7 +18,9 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
@@ -38,7 +40,15 @@
     "vitest": "^3.0.0"
   },
   "keywords": [
-    "webmcp", "mcp", "mcp-server", "playwright", "browser",
-    "ai-agents", "claude", "chatgpt", "testing", "discovery"
+    "webmcp",
+    "mcp",
+    "mcp-server",
+    "playwright",
+    "browser",
+    "ai-agents",
+    "claude",
+    "chatgpt",
+    "testing",
+    "discovery"
   ]
 }

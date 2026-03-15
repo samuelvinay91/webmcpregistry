@@ -1,6 +1,6 @@
 {
   "name": "@webmcpregistry/evals",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Evaluate AI agent tool-calling accuracy against WebMCP tool definitions",
   "license": "Apache-2.0",
   "author": "RAPHATECH OÜ",

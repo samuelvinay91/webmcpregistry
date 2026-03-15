@@ -1,6 +1,6 @@
 {
   "name": "@webmcpregistry/cli",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "CLI tool to test and validate WebMCP readiness of any website",
   "license": "Apache-2.0",
   "author": "RAPHATECH OÜ",
