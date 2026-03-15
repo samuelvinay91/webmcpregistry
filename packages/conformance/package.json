@@ -3,6 +3,9 @@
   "version": "0.2.1",
   "description": "WebMCP W3C specification conformance test suite — verify any navigator.modelContext implementation against the standard",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "RAPHATECH OÜ",
   "type": "module",
   "main": "./dist/index.cjs",

@@ -3,6 +3,9 @@
   "version": "0.2.1",
   "description": "Drop-in <script> tag to make any website WebMCP-ready — zero framework required",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "RAPHATECH OÜ",
   "type": "module",
   "main": "./dist/auto.global.js",

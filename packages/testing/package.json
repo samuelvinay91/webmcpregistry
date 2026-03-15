@@ -3,6 +3,9 @@
   "version": "0.2.1",
   "description": "Schema-driven test generation, contract testing, and mutation testing for WebMCP tools",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "RAPHATECH OÜ",
   "type": "module",
   "main": "./dist/index.cjs",
