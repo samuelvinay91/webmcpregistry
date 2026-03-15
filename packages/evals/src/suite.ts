@@ -99,7 +99,7 @@ export function runEvalSuite(suite: EvalSuite): EvalReport {
     // Check args if provided
     let argsCorrect = true
     if (evalCase.expectedArgs && best) {
-      argsCorrect = scoreArgumentMatch(evalCase.expectedArgs, best.tool.inputSchema)
+      argsCorrect = scoreArgumentMatch(evalCase.expectedArgs, best.tool.inputSchema ?? { type: 'object', properties: {} })
     }
 
     // Track confusion

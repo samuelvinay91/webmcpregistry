@@ -66,14 +66,14 @@ export function generateManifest(
     tools: tools.map((t) => ({
       name: t.name,
       description: t.description,
-      inputSchema: t.inputSchema,
-      safetyLevel: t.safetyLevel,
+      inputSchema: t.inputSchema ?? { type: 'object', properties: {} },
+      safetyLevel: t.safetyLevel ?? 'read',
       annotations: t.annotations,
       pageUrl: options?.pageUrl,
     })),
     sdk: {
       name: '@webmcpregistry/core',
-      version: '0.1.0',
+      version: '0.2.0',
     },
   }
 }
@@ -106,7 +106,7 @@ export function generateJsonLd(
       priceCurrency: 'USD',
     },
     potentialAction: tools.map((tool) => ({
-      '@type': tool.safetyLevel === 'read' ? 'SearchAction' : 'Action',
+      '@type': (tool.safetyLevel ?? 'read') === 'read' ? 'SearchAction' : 'Action',
       name: tool.name,
       description: tool.description,
       target: {
@@ -114,7 +114,7 @@ export function generateJsonLd(
         urlTemplate: `${site.url}#webmcp:${tool.name}`,
         actionPlatform: 'https://webmachinelearning.github.io/webmcp/',
       },
-      ...(tool.inputSchema.required?.length
+      ...(tool.inputSchema?.required?.length
         ? {
             'query-input': tool.inputSchema.required
               .map((r) => `required name=${r}`)
@@ -160,12 +160,13 @@ export function generateLlmsTxt(
   lines.push('## Available Tools')
   lines.push('')
   for (const tool of tools) {
-    const safety = tool.safetyLevel === 'danger' ? ' ⚠️' : tool.safetyLevel === 'write' ? ' ✏️' : ' 🔍'
+    const safetyLevel = tool.safetyLevel ?? 'read'
+    const safety = safetyLevel === 'danger' ? ' ⚠️' : safetyLevel === 'write' ? ' ✏️' : ' 🔍'
     lines.push(`### ${tool.name}${safety}`)
     lines.push('')
     lines.push(tool.description)
     lines.push('')
-    if (tool.inputSchema.required?.length) {
+    if (tool.inputSchema?.required?.length) {
       lines.push(`Required inputs: ${tool.inputSchema.required.join(', ')}`)
       lines.push('')
     }
@@ -205,10 +206,10 @@ export function generateAgentsJson(
     tools: tools.map((tool) => ({
       name: tool.name,
       description: tool.description,
-      safety: tool.safetyLevel,
-      inputs: Object.keys(tool.inputSchema.properties ?? {}),
-      required_inputs: tool.inputSchema.required ?? [],
-      read_only: tool.annotations?.readOnlyHint ?? tool.safetyLevel === 'read',
+      safety: tool.safetyLevel ?? 'read',
+      inputs: Object.keys(tool.inputSchema?.properties ?? {}),
+      required_inputs: tool.inputSchema?.required ?? [],
+      read_only: tool.annotations?.readOnlyHint ?? (tool.safetyLevel ?? 'read') === 'read',
     })),
     capabilities: {
       search: tools.some((t) => t.name.includes('search') || t.name.includes('find')),

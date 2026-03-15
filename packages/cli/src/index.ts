@@ -17,7 +17,7 @@ const program = new Command()
 program
   .name('webmcp')
   .description('Test and validate WebMCP readiness of any website')
-  .version('0.1.0')
+  .version('0.2.0')
 
 program
   .command('test <url>')

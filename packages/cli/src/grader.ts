@@ -46,13 +46,14 @@ export function calculateGrade(
     let totalSchemaScore = 0
     for (const tool of tools) {
       let score = 0
+      const schema = tool.inputSchema ?? { type: 'object', properties: {} }
       if (tool.inputSchema) {
         score += 3 // Has schema
-        const props = Object.keys(tool.inputSchema.properties ?? {})
+        const props = Object.keys(schema.properties ?? {})
         if (props.length > 0) score += 3 // Has properties
-        if (tool.inputSchema.required && tool.inputSchema.required.length > 0) score += 2 // Has required
+        if (schema.required && schema.required.length > 0) score += 2 // Has required
         // Check if properties have descriptions
-        const withDesc = Object.values(tool.inputSchema.properties ?? {}).filter(
+        const withDesc = Object.values(schema.properties ?? {}).filter(
           (p) => p.description
         ).length
         if (withDesc === props.length && props.length > 0) score += 2 // All props described

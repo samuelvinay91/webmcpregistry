@@ -44,7 +44,7 @@ function boot() {
 
   // Expose on window for debugging
   ;(globalThis as Record<string, unknown>)['__WEBMCP_REGISTRY__'] = {
-    version: '0.1.0',
+    version: '0.2.0',
     mode,
     siteKey,
     tools: result.registered,

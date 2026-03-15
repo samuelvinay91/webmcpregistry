@@ -18,6 +18,8 @@ export interface BrowserConfig {
   userAgent?: string
   /** Path to storage state JSON for auth (cookies, localStorage). */
   storageState?: string
+  /** Maximum number of pages to keep open (default: 10). Oldest pages are closed when exceeded. */
+  maxPages?: number
 }
 
 const DEFAULT_CONFIG: Required<BrowserConfig> = {
@@ -26,6 +28,7 @@ const DEFAULT_CONFIG: Required<BrowserConfig> = {
   timeout: 30000,
   userAgent: 'WebMCPServer/0.2.0 (+https://webmcpregistry.com)',
   storageState: '',
+  maxPages: 10,
 }
 
 export class BrowserManager {
@@ -80,7 +83,7 @@ export class BrowserManager {
     const page = await context.newPage()
 
     await page.goto(url, {
-      waitUntil: 'networkidle',
+      waitUntil: 'domcontentloaded',
       timeout: this.config.timeout,
     })
 
@@ -95,6 +98,14 @@ export class BrowserManager {
       )
     } catch {
       // Site may not have WebMCP — that's okay, we'll fall back to HTML detection
+    }
+
+    // Evict oldest page if we've exceeded maxPages
+    if (this.pages.size >= this.config.maxPages) {
+      const oldestKey = this.pages.keys().next().value!
+      const oldestPage = this.pages.get(oldestKey)!
+      this.pages.delete(oldestKey)
+      if (!oldestPage.isClosed()) await oldestPage.close().catch(() => {})
     }
 
     this.pages.set(key, page)

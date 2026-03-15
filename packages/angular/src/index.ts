@@ -70,11 +70,14 @@ export class WebMCPService {
 // Provider function (works with Angular's provider pattern)
 // ---------------------------------------------------------------------------
 
-const WEBMCP_SERVICE = new WebMCPService()
+let _lazyService: WebMCPService | null = null
 
 /**
  * Provide WebMCP service to the Angular application.
  * Returns a provider-compatible factory.
+ *
+ * Creates a fresh instance each time to prevent cross-request
+ * contamination in SSR environments.
  *
  * @example
  * ```typescript
@@ -88,23 +91,30 @@ const WEBMCP_SERVICE = new WebMCPService()
  * ```
  */
 export function provideWebMCP(config: WebMCPConfig = {}) {
+  const service = new WebMCPService()
+  _lazyService = service
+
   // Initialize when the provider is created
   if (typeof window !== 'undefined') {
-    queueMicrotask(() => WEBMCP_SERVICE.initialize(config))
+    queueMicrotask(() => service.initialize(config))
   }
 
   return {
     provide: 'WEBMCP_SERVICE',
-    useValue: WEBMCP_SERVICE,
+    useValue: service,
   }
 }
 
 /**
- * Get the singleton WebMCP service instance.
+ * Get the WebMCP service instance.
+ * Lazily creates an instance if one has not been provided yet.
  * Can be used directly without Angular DI.
  */
 export function getWebMCPService(): WebMCPService {
-  return WEBMCP_SERVICE
+  if (!_lazyService) {
+    _lazyService = new WebMCPService()
+  }
+  return _lazyService
 }
 
 // Re-export core types

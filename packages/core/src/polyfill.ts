@@ -8,6 +8,8 @@
 
 import type { ModelContextAPI, ToolDefinition, ToolHandler } from './types.js'
 
+const POLYFILL_MARKER = Symbol.for('webmcpregistry-polyfill')
+
 interface RegisteredTool {
   definition: ToolDefinition
   handler?: ToolHandler
@@ -16,10 +18,13 @@ interface RegisteredTool {
 function createPolyfill(): ModelContextAPI {
   const tools = new Map<string, RegisteredTool>()
 
-  return {
+  const polyfill: ModelContextAPI = {
     registerTool(definition: ToolDefinition): void {
-      if (!definition.name) {
+      if (typeof definition.name !== 'string' || definition.name.length === 0) {
         throw new Error('WebMCP: Tool name is required')
+      }
+      if (typeof definition.description !== 'string' || definition.description.length === 0) {
+        throw new Error('WebMCP: Tool description is required')
       }
       if (tools.has(definition.name)) {
         throw new Error(`WebMCP: Tool "${definition.name}" is already registered`)
@@ -41,6 +46,15 @@ function createPolyfill(): ModelContextAPI {
       return Array.from(tools.values()).map((t) => t.definition)
     },
   }
+
+  Object.defineProperty(polyfill, POLYFILL_MARKER, {
+    value: true,
+    enumerable: false,
+    writable: false,
+    configurable: false,
+  })
+
+  return polyfill
 }
 
 /**
@@ -84,9 +98,8 @@ export function hasNativeAPI(): boolean {
  * Check if the current navigator.modelContext is our polyfill.
  */
 export function isPolyfill(mc: ModelContextAPI): boolean {
-  // Native implementations will have prototype chain from browser internals.
-  // Our polyfill is a plain object with Object.prototype.
-  return Object.getPrototypeOf(mc) === Object.prototype
+  // Check for our private Symbol marker set in createPolyfill().
+  return POLYFILL_MARKER in mc && (mc as any)[POLYFILL_MARKER] === true
 }
 
 /**

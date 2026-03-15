@@ -315,7 +315,8 @@ function htmlInputTypeToJsonType(htmlType: string): ToolPropertySchema['type'] {
 function labelForInput(form: HTMLFormElement, input: HTMLInputElement): string | null {
   const id = input.id
   if (!id) return null
-  const label = form.querySelector(`label[for="${id}"]`)
+  const escapedId = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(id) : id.replace(/([^\w-])/g, '\\$1')
+  const label = form.querySelector(`label[for="${escapedId}"]`)
   return label?.textContent?.trim() ?? null
 }
 

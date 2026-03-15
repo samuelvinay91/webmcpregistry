@@ -95,15 +95,15 @@ export interface ToolDefinition {
   /** [SPEC] Natural language description of what the tool does (required, non-empty). */
   description: string
   /** [SPEC] JSON Schema describing input parameters (optional per spec). */
-  inputSchema: ToolInputSchema
+  inputSchema?: ToolInputSchema
   /** [SPEC] Callback invoked when agent calls the tool. Receives (input, client). */
   execute?: ToolExecuteCallback
   /** [SPEC] Behavioral annotations for AI agents. */
   annotations?: ToolAnnotations
   /** [EXTENSION] Simplified handler (alias for execute without ModelContextClient). */
   handler?: ToolHandler
-  /** [EXTENSION] Safety classification: read, write, or danger. */
-  safetyLevel: ToolSafetyLevel
+  /** [EXTENSION] Safety classification: read, write, or danger. Defaults to 'read'. */
+  safetyLevel?: ToolSafetyLevel
 }
 
 // ---------------------------------------------------------------------------

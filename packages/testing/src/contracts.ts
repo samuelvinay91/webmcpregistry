@@ -93,7 +93,9 @@ export function diffContracts(
     }
 
     // Check inputSchema changes
-    const schemaChanges = diffSchema(name, beforeTool.inputSchema, afterTool.inputSchema)
+    const beforeSchema = beforeTool.inputSchema ?? { type: 'object' as const, properties: {} }
+    const afterSchema = afterTool.inputSchema ?? { type: 'object' as const, properties: {} }
+    const schemaChanges = diffSchema(name, beforeSchema, afterSchema)
     changed.push(...schemaChanges)
 
     // Check annotations
@@ -120,8 +122,8 @@ function diffSchema(
   after: ToolDefinition['inputSchema']
 ): ContractDiff['changed'] {
   const changes: ContractDiff['changed'] = []
-  const beforeProps = before.properties ?? {}
-  const afterProps = after.properties ?? {}
+  const beforeProps = before?.properties ?? {}
+  const afterProps = after?.properties ?? {}
 
   // Removed properties (breaking if they were required)
   for (const name of Object.keys(beforeProps)) {
@@ -131,14 +133,14 @@ function diffSchema(
         field: `inputSchema.properties.${name}`,
         before: beforeProps[name],
         after: undefined,
-        breaking: before.required?.includes(name) ?? false,
+        breaking: before?.required?.includes(name) ?? false,
       })
     }
   }
 
   // Added required properties (breaking — existing agents don't send them)
   for (const name of Object.keys(afterProps)) {
-    if (!beforeProps[name] && after.required?.includes(name)) {
+    if (!beforeProps[name] && after?.required?.includes(name)) {
       changes.push({
         toolName,
         field: `inputSchema.properties.${name}`,
@@ -213,10 +215,10 @@ export async function verifyAnnotations(
       results.push({
         toolName: tool.name,
         annotation: 'readOnlyHint',
-        passed: tool.safetyLevel === 'read',
-        details: tool.safetyLevel === 'read'
+        passed: (tool.safetyLevel ?? 'read') === 'read',
+        details: (tool.safetyLevel ?? 'read') === 'read'
           ? 'readOnlyHint=true and safetyLevel=read are consistent'
-          : `readOnlyHint=true but safetyLevel="${tool.safetyLevel}" — inconsistent`,
+          : `readOnlyHint=true but safetyLevel="${tool.safetyLevel ?? 'read'}" — inconsistent`,
       })
     }
   }
@@ -238,8 +240,9 @@ async function callHandler(
 
 function buildMinimalInput(tool: ToolDefinition): Record<string, unknown> {
   const input: Record<string, unknown> = {}
-  const props = tool.inputSchema.properties ?? {}
-  for (const name of tool.inputSchema.required ?? []) {
+  const schema = tool.inputSchema ?? { type: 'object' as const, properties: {} }
+  const props = schema.properties ?? {}
+  for (const name of schema.required ?? []) {
     const prop = props[name]
     if (!prop) continue
     switch (prop.type) {

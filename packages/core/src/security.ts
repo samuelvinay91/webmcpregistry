@@ -89,7 +89,7 @@ function checkPromptInjection(tool: ToolDefinition): SecurityFinding[] {
   const findings: SecurityFinding[] = []
   const textsToCheck = [
     tool.description,
-    ...Object.values(tool.inputSchema.properties ?? {}).map(
+    ...Object.values(tool.inputSchema?.properties ?? {}).map(
       (p) => p.description ?? ''
     ),
   ]
@@ -124,7 +124,7 @@ const SAFE_INPUT_NAMES = new Set([
 
 function checkUnrestrictedInputs(tool: ToolDefinition): SecurityFinding[] {
   const findings: SecurityFinding[] = []
-  const properties = tool.inputSchema.properties ?? {}
+  const properties = tool.inputSchema?.properties ?? {}
   const propEntries = Object.entries(properties)
 
   // Count string inputs without constraints
@@ -168,11 +168,11 @@ function checkUnclassifiedDanger(tool: ToolDefinition): SecurityFinding[] {
     DANGER_ACTION_KEYWORDS.some((k) => nameLower.includes(k)) ||
     DANGER_ACTION_KEYWORDS.some((k) => descLower.includes(k))
 
-  if (hasDangerKeyword && tool.safetyLevel !== 'danger') {
+  if (hasDangerKeyword && (tool.safetyLevel ?? 'read') !== 'danger') {
     findings.push({
       severity: 'medium',
       type: 'unclassified_danger',
-      description: `Tool "${tool.name}" appears to perform destructive or financial actions but is classified as "${tool.safetyLevel}" instead of "danger".`,
+      description: `Tool "${tool.name}" appears to perform destructive or financial actions but is classified as "${tool.safetyLevel ?? 'read'}" instead of "danger".`,
       toolName: tool.name,
     })
   }

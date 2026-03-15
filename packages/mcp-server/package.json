@@ -22,9 +22,9 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "clean": "rm -rf dist",
-    "postinstall": "playwright install chromium --with-deps 2>/dev/null || true"
+    "postinstall": "playwright install chromium 2>/dev/null || true"
   },
   "dependencies": {
     "@webmcpregistry/core": "workspace:*",

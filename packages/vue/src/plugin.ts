@@ -31,16 +31,22 @@ export const webmcpPlugin = {
       polyfilled: false,
     })
 
-    // Initialize on next tick (after DOM mount)
+    // Initialize after the DOM is ready so auto-detection can find mounted elements
     if (typeof window !== 'undefined') {
-      queueMicrotask(() => {
+      const run = () => {
         const result = initialize(config)
         state.tools = result.registered
         state.ready = true
         state.mode = result.mode
         state.nativeAPI = result.nativeAPI
         state.polyfilled = result.polyfilled
-      })
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run, { once: true })
+      } else {
+        setTimeout(run, 0)
+      }
     }
 
     app.provide(WEBMCP_KEY, state)

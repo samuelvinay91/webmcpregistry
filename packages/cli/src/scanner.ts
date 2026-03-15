@@ -63,7 +63,7 @@ export function extractToolsFromHTML(
   // Detect API presence signals
   const hasRegisterTool = lower.includes('registertool')
   const hasModelContext = lower.includes('navigator.modelcontext') || lower.includes('modelcontext')
-  const hasPolyfillRef = lower.includes('@mcp-b/global') || lower.includes('webmcp-polyfill')
+  const hasPolyfillRef = lower.includes('@mcp-b/global') || lower.includes('webmcp-polyfill') || lower.includes('@webmcpregistry')
   const hasDeclarativeAttrs = lower.includes('toolname=')
 
   // Extract declarative tools from HTML attributes

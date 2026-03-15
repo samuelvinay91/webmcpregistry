@@ -34,13 +34,13 @@ export function scoreToolSelection(task: string, tool: ToolDefinition): Selectio
   const descMatch = taskWords.length > 0 ? Math.min(1, descOverlap / taskWords.length) * 0.4 : 0
 
   // 3. Schema match (0-0.2): do task keywords match property names/descriptions?
-  const schemaText = extractSchemaText(tool.inputSchema)
+  const schemaText = extractSchemaText(tool.inputSchema ?? { type: 'object', properties: {} })
   const schemaWords = tokenize(schemaText)
   const schemaOverlap = taskWords.filter((tw) => schemaWords.some((sw) => fuzzyMatch(tw, sw))).length
   const schemaMatch = taskWords.length > 0 ? Math.min(1, schemaOverlap / taskWords.length) * 0.2 : 0
 
   // 4. Safety match (0-0.1): does the task imply the right safety level?
-  const safetyMatch = scoreSafetyAlignment(task, tool.safetyLevel) * 0.1
+  const safetyMatch = scoreSafetyAlignment(task, tool.safetyLevel ?? 'read') * 0.1
 
   const total = nameMatch + descMatch + schemaMatch + safetyMatch
 

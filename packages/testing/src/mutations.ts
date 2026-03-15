@@ -51,8 +51,9 @@ export function generateAllMutations(tools: ToolDefinition[]): Mutation[] {
 
 function generateSchemaMutations(tool: ToolDefinition): Mutation[] {
   const mutations: Mutation[] = []
-  const props = tool.inputSchema.properties ?? {}
-  const required = tool.inputSchema.required ?? []
+  const schema = tool.inputSchema ?? { type: 'object' as const, properties: {} }
+  const props = schema.properties ?? {}
+  const required = schema.required ?? []
 
   // Mutation: remove each required field from required array
   for (const req of required) {
@@ -60,7 +61,7 @@ function generateSchemaMutations(tool: ToolDefinition): Mutation[] {
       tool: {
         ...tool,
         inputSchema: {
-          ...tool.inputSchema,
+          ...schema,
           required: required.filter((r) => r !== req),
         },
       },
@@ -77,7 +78,7 @@ function generateSchemaMutations(tool: ToolDefinition): Mutation[] {
       tool: {
         ...tool,
         inputSchema: {
-          ...tool.inputSchema,
+          ...schema,
           properties: {
             ...props,
             [name]: { ...prop, type: otherType } as ToolPropertySchema,
@@ -110,7 +111,7 @@ function generateSchemaMutations(tool: ToolDefinition): Mutation[] {
         tool: {
           ...tool,
           inputSchema: {
-            ...tool.inputSchema,
+            ...schema,
             properties: {
               ...props,
               [name]: { ...prop, enum: undefined },
@@ -129,7 +130,7 @@ function generateSchemaMutations(tool: ToolDefinition): Mutation[] {
     tool: {
       ...tool,
       inputSchema: {
-        ...tool.inputSchema,
+        ...schema,
         properties: {
           ...props,
           _mutated_required_field: { type: 'string' as const, description: 'Mutation: new required field' },
@@ -151,11 +152,12 @@ function generateSchemaMutations(tool: ToolDefinition): Mutation[] {
 
 function generateSafetyMutations(tool: ToolDefinition): Mutation[] {
   const levels = ['read', 'write', 'danger'] as const
+  const currentLevel = tool.safetyLevel ?? 'read'
   return levels
-    .filter((l) => l !== tool.safetyLevel)
+    .filter((l) => l !== currentLevel)
     .map((level) => ({
       tool: { ...tool, safetyLevel: level },
-      description: `Change safetyLevel from "${tool.safetyLevel}" to "${level}"`,
+      description: `Change safetyLevel from "${currentLevel}" to "${level}"`,
       category: 'safety' as const,
       breaking: true,
     }))

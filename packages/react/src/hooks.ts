@@ -2,7 +2,7 @@
  * React hooks for registering individual WebMCP tools.
  */
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo } from 'react'
 import {
   registerTool,
   unregisterTool,
@@ -36,17 +36,13 @@ import {
  * ```
  */
 export function useWebMCPTool(tool: ToolDefinition): void {
-  const registered = useRef(false)
   const toolName = tool.name
 
   useEffect(() => {
-    if (registered.current) return
-    registered.current = true
-
     try {
       registerTool(tool)
     } catch {
-      // Tool may already be registered (e.g., from provider auto-detect)
+      // Tool may already be registered (e.g., from provider auto-detect or Strict Mode double-mount)
     }
 
     return () => {
@@ -55,7 +51,6 @@ export function useWebMCPTool(tool: ToolDefinition): void {
       } catch {
         // Tool may already be unregistered
       }
-      registered.current = false
     }
   }, [toolName]) // eslint-disable-line react-hooks/exhaustive-deps
 }
@@ -74,7 +69,10 @@ export function useWebMCPTool(tool: ToolDefinition): void {
  * ```
  */
 export function useWebMCPTools(tools: ToolDefinition[]): void {
-  const registered = useRef<string[]>([])
+  const toolNamesKey = useMemo(
+    () => JSON.stringify(tools.map((t) => t.name)),
+    [tools.map((t) => t.name).join(',')] // eslint-disable-line react-hooks/exhaustive-deps
+  )
 
   useEffect(() => {
     const names: string[] = []
@@ -84,21 +82,18 @@ export function useWebMCPTools(tools: ToolDefinition[]): void {
         registerTool(tool)
         names.push(tool.name)
       } catch {
-        // Skip already-registered tools
+        // Tool may already be registered (e.g., from provider auto-detect or Strict Mode double-mount)
       }
     }
 
-    registered.current = names
-
     return () => {
-      for (const name of registered.current) {
+      for (const name of names) {
         try {
           unregisterTool(name)
         } catch {
-          // Already unregistered
+          // Tool may already be unregistered
         }
       }
-      registered.current = []
     }
-  }, [tools.map((t) => t.name).join(',')]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [toolNamesKey]) // eslint-disable-line react-hooks/exhaustive-deps
 }

@@ -71,7 +71,8 @@ function createTerminalReport(data: ReportData): string {
     lines.push('  Tools')
     lines.push('  ─────────────────────────────────────')
     for (const tool of tools) {
-      const safetyTag = tool.safetyLevel === 'danger' ? '[DANGER]' : tool.safetyLevel === 'write' ? '[WRITE]' : '[READ]'
+      const safetyLevel = tool.safetyLevel ?? 'read'
+      const safetyTag = safetyLevel === 'danger' ? '[DANGER]' : safetyLevel === 'write' ? '[WRITE]' : '[READ]'
       lines.push(`  ${safetyTag} ${tool.name}`)
       lines.push(`    ${tool.description}`)
     }

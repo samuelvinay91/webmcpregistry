@@ -94,7 +94,7 @@ export class WebMCPGateway {
       ...this.tools.map((dt) => ({
         name: dt.definition.name,
         description: dt.definition.description,
-        inputSchema: dt.definition.inputSchema,
+        inputSchema: dt.definition.inputSchema ?? { type: 'object' as const, properties: {} },
       })),
       // Meta-tool: re-discover tools (useful if page state changes)
       {
@@ -230,15 +230,16 @@ export class WebMCPGateway {
       const d = tool.definition
       lines.push(`--- ${d.name} ---`)
       lines.push(`  Description: ${d.description}`)
-      lines.push(`  Safety: ${d.safetyLevel}`)
+      lines.push(`  Safety: ${d.safetyLevel ?? 'read'}`)
       lines.push(`  Source: ${tool.sourceUrl}`)
       lines.push(`  Discovery: ${tool.discoveryMethod}`)
       lines.push(`  Executable: ${tool.executable}`)
-      const props = Object.keys(d.inputSchema.properties ?? {})
+      const schema = d.inputSchema ?? { type: 'object' as const, properties: {} }
+      const props = Object.keys(schema.properties ?? {})
       if (props.length > 0) {
         lines.push(`  Inputs: ${props.join(', ')}`)
-        if (d.inputSchema.required?.length) {
-          lines.push(`  Required: ${d.inputSchema.required.join(', ')}`)
+        if (schema.required?.length) {
+          lines.push(`  Required: ${schema.required.join(', ')}`)
         }
       }
       lines.push(``)

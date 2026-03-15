@@ -46,7 +46,7 @@ export function generateTestSuite(tools: ToolDefinition[]): ToolTestCase[] {
 
 function generateValidCases(tool: ToolDefinition): ToolTestCase[] {
   const cases: ToolTestCase[] = []
-  const schema = tool.inputSchema
+  const schema = tool.inputSchema ?? { type: 'object' as const, properties: {} }
   const properties = schema.properties ?? {}
 
   // Case 1: All required fields with valid values
@@ -104,7 +104,7 @@ function generateValidCases(tool: ToolDefinition): ToolTestCase[] {
 
 function generateInvalidCases(tool: ToolDefinition): ToolTestCase[] {
   const cases: ToolTestCase[] = []
-  const schema = tool.inputSchema
+  const schema = tool.inputSchema ?? { type: 'object' as const, properties: {} }
   const properties = schema.properties ?? {}
 
   // Case 1: Empty object (missing all required fields)
@@ -158,7 +158,7 @@ function generateInvalidCases(tool: ToolDefinition): ToolTestCase[] {
 
 function generateBoundaryCases(tool: ToolDefinition): ToolTestCase[] {
   const cases: ToolTestCase[] = []
-  const schema = tool.inputSchema
+  const schema = tool.inputSchema ?? { type: 'object' as const, properties: {} }
   const properties = schema.properties ?? {}
   const baseInput = buildRequiredInput(schema)
 
@@ -255,7 +255,7 @@ function generateBoundaryCases(tool: ToolDefinition): ToolTestCase[] {
 
 function generateTypeCoercionCases(tool: ToolDefinition): ToolTestCase[] {
   const cases: ToolTestCase[] = []
-  const schema = tool.inputSchema
+  const schema = tool.inputSchema ?? { type: 'object' as const, properties: {} }
   const properties = schema.properties ?? {}
   const baseInput = buildRequiredInput(schema)
 
@@ -293,7 +293,7 @@ function generateTypeCoercionCases(tool: ToolDefinition): ToolTestCase[] {
 
 function generateSecurityCases(tool: ToolDefinition): ToolTestCase[] {
   const cases: ToolTestCase[] = []
-  const schema = tool.inputSchema
+  const schema = tool.inputSchema ?? { type: 'object' as const, properties: {} }
   const properties = schema.properties ?? {}
   const baseInput = buildRequiredInput(schema)
 
