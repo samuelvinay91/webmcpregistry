@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { WebMCPProviderWrapper } from '@/components/WebMCPProviderWrapper'
 import { Navbar } from '@/components/Navbar'
+import { ToolInspector } from '@/components/inspector/ToolInspector'
 
 export const metadata: Metadata = {
   title: 'WebMCP Registry — The SDK that makes any website agent-ready',
@@ -21,6 +22,7 @@ export default function RootLayout({
         <WebMCPProviderWrapper>
           <Navbar />
           <main>{children}</main>
+          <ToolInspector />
         </WebMCPProviderWrapper>
       </body>
     </html>

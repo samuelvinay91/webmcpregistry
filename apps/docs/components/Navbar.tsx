@@ -14,11 +14,14 @@ export function Navbar() {
           <Link href="/demo" className="hover:text-[var(--text)] no-underline">
             Live Demo
           </Link>
+          <Link href="/demo/shop" className="hover:text-[var(--text)] no-underline">
+            Before/After
+          </Link>
           <Link href="/playground" className="hover:text-[var(--text)] no-underline">
             Playground
           </Link>
           <a
-            href="https://github.com/webmcpregistry/sdk"
+            href="https://github.com/samuelvinay91/webmcpregistry"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-[var(--text)] no-underline"
