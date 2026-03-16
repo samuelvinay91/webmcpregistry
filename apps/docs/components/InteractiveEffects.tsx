@@ -175,7 +175,8 @@ export function AnimatedNumber({
   suffix?: string
   className?: string
 }) {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(value) // Start with real value for SSR/static
+  const [hasAnimated, setHasAnimated] = useState(false)
   const ref = useRef<HTMLSpanElement>(null)
   const [started, setStarted] = useState(false)
 
@@ -198,20 +199,19 @@ export function AnimatedNumber({
   }, [started])
 
   useEffect(() => {
-    if (!started) return
+    if (!started || hasAnimated) return
+    setHasAnimated(true)
 
+    // Reset to 0, then animate up
+    setCount(0)
     const steps = 60
     const stepDuration = duration / steps
-    const increment = value / steps
-    let current = 0
     let step = 0
 
     const timer = setInterval(() => {
       step++
-      // Ease-out curve
       const progress = 1 - Math.pow(1 - step / steps, 3)
-      current = Math.round(value * progress)
-      setCount(current)
+      setCount(Math.round(value * progress))
 
       if (step >= steps) {
         setCount(value)
@@ -220,7 +220,7 @@ export function AnimatedNumber({
     }, stepDuration)
 
     return () => clearInterval(timer)
-  }, [started, value, duration])
+  }, [started, value, duration, hasAnimated])
 
   return (
     <span ref={ref} className={className}>

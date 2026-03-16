@@ -15,6 +15,7 @@ files/
 # Screenshots (dev/testing artifacts — not source code)
 *.png
 !apps/docs/public/og-image.png
+!apps/docs/app/icon.png
 
 # Playwright MCP console logs
 .playwright-mcp/
