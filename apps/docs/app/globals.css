@@ -104,22 +104,16 @@ html {
 /* ─── Animated gradient border ─── */
 .gradient-border {
   position: relative;
-  border: none;
-}
-.gradient-border::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
   background: linear-gradient(135deg, var(--accent), #a855f7, #ec4899, var(--accent));
   background-size: 300% 300%;
   animation: gradientShift 4s ease infinite;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  pointer-events: none;
+  padding: 1px;
+  border-radius: 16px;
+  border: none;
+}
+.gradient-border > * {
+  background: var(--bg);
+  border-radius: 15px;
 }
 
 @keyframes gradientShift {
