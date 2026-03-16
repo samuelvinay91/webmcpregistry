@@ -70,7 +70,7 @@ export function PlaygroundClient() {
   return (
     <div>
       {/* Tab bar */}
-      <div className="mb-6 flex gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1">
+      <div className="mb-6 flex flex-wrap gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] p-1">
         {tabs.map((t) => (
           <button
             type="button"

@@ -94,7 +94,7 @@ function StepNumber({ n }: { n: number }) {
 
 function CodeBlock({ children }: { children: string }) {
   return (
-    <pre className="overflow-x-auto rounded-lg bg-[var(--bg)] p-4 text-xs leading-relaxed text-[var(--text3)] ring-1 ring-[var(--border)]">
+    <pre className="overflow-x-auto rounded-lg bg-[var(--bg)] p-4 text-xs leading-relaxed text-[var(--text3)] ring-1 ring-[var(--border)] sm:text-sm">
       <code>{children}</code>
     </pre>
   )
@@ -112,7 +112,7 @@ export default function HomeClient() {
       {/* ============================================================ */}
       <FadeInSection delay={0}>
         <section className="pb-20">
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             {/* The Problem */}
             <div>
               <h2 className="mb-1 text-xs font-semibold uppercase tracking-widest text-[var(--grade-f)]">
@@ -217,7 +217,7 @@ export default function HomeClient() {
             <h2 className="mb-2 text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">
               5-Minute Setup
             </h2>
-            <p className="text-3xl font-bold md:text-4xl">Three steps. That&apos;s it.</p>
+            <p className="text-2xl font-bold md:text-4xl">Three steps. That&apos;s it.</p>
           </div>
           <p className="mx-auto mb-12 max-w-lg text-center text-sm text-[var(--text2)]">
             Add AI-callable tools to any React app. Works the same way for Vue, Angular, Svelte, and plain HTML.
@@ -302,11 +302,11 @@ function SearchProducts() {
       {/* ============================================================ */}
       <FadeInSection delay={0.1}>
         <section className="pb-20">
-          <h2 className="mb-2 text-center text-3xl font-bold">Every framework. One API.</h2>
+          <h2 className="mb-2 text-center text-2xl font-bold md:text-3xl">Every framework. One API.</h2>
           <p className="mx-auto mb-10 max-w-md text-center text-sm text-[var(--text2)]">
             Thin adapters over core. Same tools, same API surface, any stack.
           </p>
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
             {FRAMEWORKS.map((fw) => (
               <div
                 key={fw.name}
@@ -330,7 +330,7 @@ function SearchProducts() {
       {/* ============================================================ */}
       <FadeInSection delay={0.1}>
         <section className="pb-20">
-          <h2 className="mb-2 text-center text-3xl font-bold">What you get</h2>
+          <h2 className="mb-2 text-center text-2xl font-bold md:text-3xl">What you get</h2>
           <p className="mx-auto mb-10 max-w-md text-center text-sm text-[var(--text2)]">
             12 packages covering framework adapters, testing, conformance, evals, and infrastructure.
           </p>
@@ -374,7 +374,7 @@ function SearchProducts() {
       <FadeInSection delay={0.1}>
         <section className="pb-20">
           <div className="glass rounded-xl">
-            <div className="grid divide-y divide-[var(--border)] md:grid-cols-3 md:divide-x md:divide-y-0">
+            <div className="grid grid-cols-1 divide-y divide-[var(--border)] md:grid-cols-3 md:divide-x md:divide-y-0">
               {/* Built on standards */}
               <div className="px-6 py-8 text-center">
                 <div className="mb-3 text-xs font-semibold uppercase tracking-widest text-[var(--accent)]">
@@ -430,7 +430,7 @@ function SearchProducts() {
             {/* Background accent glow */}
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[var(--accent)]/5 via-transparent to-[#7c3aed]/5" />
             <div className="relative">
-              <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+              <h2 className="mb-4 text-2xl font-bold md:text-4xl">
                 Ready to make your site agent-ready?
               </h2>
               <p className="mx-auto mb-8 max-w-md text-sm text-[var(--text2)]">

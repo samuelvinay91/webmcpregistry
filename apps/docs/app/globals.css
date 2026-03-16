@@ -217,3 +217,17 @@ body > * {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
 }
+
+/* ─── Mobile code block scrolling ─── */
+pre, code {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 640px) {
+  /* Reduce body padding on mobile */
+  .max-w-7xl {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

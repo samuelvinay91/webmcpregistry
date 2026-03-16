@@ -86,7 +86,7 @@ export default function WhyWebMCPClient({ liveDemoSlot }: { liveDemoSlot?: React
         <div className="mb-4 inline-block rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-1.5 text-xs text-[var(--accent)]">
           The Agentic Web
         </div>
-        <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight md:text-6xl">
+        <h1 className="mb-6 text-3xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
           Why WebMCP?
         </h1>
         <p className="mx-auto max-w-2xl text-xl text-[var(--text2)]">
@@ -111,7 +111,7 @@ export default function WhyWebMCPClient({ liveDemoSlot }: { liveDemoSlot?: React
               But even the best crawlers share fundamental limitations when it comes to
               {' '}<strong className="text-[var(--text)]">performing actions</strong> on websites:
             </p>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <ProblemCard
                 title="Indirect"
                 description="Agents simulate clicks and form fills through the UI. Selector-based automation breaks on DOM changes; AI-based extraction adds latency and cost."
@@ -138,7 +138,7 @@ export default function WhyWebMCPClient({ liveDemoSlot }: { liveDemoSlot?: React
               WebMCP flips the model. Instead of agents scraping websites, <strong>websites declare
               structured tools</strong> that agents call directly.
             </p>
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <SolutionCard
                 title="Typed Inputs (W3C Spec)"
                 description="Every tool has a JSON Schema defining exactly what parameters it accepts. No guessing."
@@ -160,7 +160,8 @@ export default function WhyWebMCPClient({ liveDemoSlot }: { liveDemoSlot?: React
       <FadeInSection delay={0.2}>
         <section className="mb-20">
           <h2 className="mb-6 text-3xl font-bold">Side-by-Side Comparison</h2>
-          <div className="glass overflow-x-auto rounded-lg border border-[var(--border)]">
+          <div className="overflow-x-auto rounded-lg border border-[var(--border)]">
+            <div className="glass min-w-[600px]">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[var(--border)] bg-[var(--surface)]">
@@ -186,6 +187,7 @@ export default function WhyWebMCPClient({ liveDemoSlot }: { liveDemoSlot?: React
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         </section>
       </FadeInSection>
@@ -198,7 +200,7 @@ export default function WhyWebMCPClient({ liveDemoSlot }: { liveDemoSlot?: React
             An AI agent needs to <strong className="text-[var(--text)]">&quot;Book a flight to Tokyo&quot;</strong>.
             Compare the two approaches:
           </p>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* Crawling approach */}
             <div className="glow-red rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
               <h3 className="mb-4 text-lg font-semibold text-[var(--text3)]">With Web Crawling</h3>
@@ -250,7 +252,7 @@ export default function WhyWebMCPClient({ liveDemoSlot }: { liveDemoSlot?: React
             WebMCP does not replace web crawling. It adds a new layer on top. Here is how
             the pieces fit together:
           </p>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {ARCHITECTURE_LAYERS.map((layer) => (
               <GlowCard key={layer.label}>
                 <div className="p-6">

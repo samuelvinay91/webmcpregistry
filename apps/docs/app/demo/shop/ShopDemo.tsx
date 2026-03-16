@@ -317,7 +317,7 @@ export function ShopDemo() {
                 </span>
               </div>
 
-              <div className="mb-5 grid grid-cols-3 gap-2">
+              <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {BOOKS.map((book) => (
                   <div
                     key={book.id}
@@ -350,7 +350,7 @@ export function ShopDemo() {
                     <span className="h-1.5 w-1.5 rounded-full bg-[var(--grade-f)]/40" />
                     <span className="text-[9px] font-medium text-[var(--grade-f)]/60">Raw HTML DOM</span>
                   </div>
-                  <pre className="overflow-x-auto p-3 text-[9px] leading-[1.6] text-[var(--text3)]/70">
+                  <pre className="overflow-x-auto max-h-60 p-3 text-[9px] leading-[1.6] text-[var(--text3)]/70">
 {`<div class="shop-grid" id="main">
   <div class="book-card" data-v-3a81f>
     <div class="bc__cover" style="bg:#c27">
@@ -439,7 +439,7 @@ export function ShopDemo() {
                 </span>
               </div>
 
-              <div className="mb-5 grid grid-cols-3 gap-2">
+              <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {BOOKS.map((book) => {
                   const inCart = cart.find((i) => i.bookId === book.id)
                   return (
@@ -562,7 +562,7 @@ export function ShopDemo() {
       {/*  KEY DIFFERENCES                                             */}
       {/* ============================================================ */}
       <FadeInSection delay={0.2}>
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <GlowCard>
         <DiffCard
           icon={
@@ -648,7 +648,7 @@ export function ShopDemo() {
           )}
         </div>
 
-        <div className="grid gap-0 lg:grid-cols-[340px_1fr]">
+        <div className="grid grid-cols-1 gap-0 lg:grid-cols-[340px_1fr]">
           {/* Example buttons */}
           <div className="border-b border-[var(--accent)]/10 p-5 lg:border-b-0 lg:border-r">
             <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[var(--text3)]">

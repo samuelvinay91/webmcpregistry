@@ -52,7 +52,7 @@ export default function HomePage() {
         </p>
 
         {/* CTA buttons */}
-        <div className="mb-16 flex flex-wrap items-center justify-center gap-4">
+        <div className="mb-16 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Link
             href="/docs"
             className="glow-accent rounded-lg bg-[var(--accent)] px-7 py-3.5 text-sm font-semibold text-[var(--bg)] no-underline shadow-lg shadow-[var(--accent)]/20 transition-all hover:shadow-xl hover:shadow-[var(--accent)]/30 hover:brightness-110"
@@ -71,7 +71,7 @@ export default function HomePage() {
         {/*  HERO VISUAL — Split-screen code comparison                 */}
         {/* ---------------------------------------------------------- */}
         <div className="mx-auto max-w-5xl">
-          <div className="grid overflow-hidden rounded-xl border border-[var(--border)] md:grid-cols-2">
+          <div className="grid grid-cols-1 overflow-hidden rounded-xl border border-[var(--border)] md:grid-cols-2">
             {/* LEFT — Without WebMCP (dim, painful) */}
             <div className="glow-red border-b border-[var(--border)] bg-[#0a0c14] md:border-b-0 md:border-r">
               {/* Tab bar */}
@@ -84,7 +84,7 @@ export default function HomePage() {
               </div>
               {/* Code — intentionally verbose and fragile-looking */}
               <div className="p-4">
-                <pre className="text-[11px] leading-[1.7] md:text-xs">
+                <pre className="overflow-x-auto text-[11px] leading-[1.7] md:text-xs">
                   <code>
                     <Line dim><Kw dim>import</Kw> {'{'} chromium {'}'} <Kw dim>from</Kw> <Str dim>{`'playwright'`}</Str>;</Line>
                     <Line dim />
@@ -129,7 +129,7 @@ export default function HomePage() {
               </div>
               {/* Code — clean, bright, typed */}
               <div className="p-4">
-                <pre className="text-[11px] leading-[1.7] md:text-xs">
+                <pre className="overflow-x-auto text-[11px] leading-[1.7] md:text-xs">
                   <code>
                     <Line><Cmt>{'// Discover tools the site publishes'}</Cmt></Line>
                     <Line><Kw>const</Kw> tools = <Kw>await</Kw> navigator.modelContext</Line>
