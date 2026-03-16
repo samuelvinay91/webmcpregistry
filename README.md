@@ -592,6 +592,18 @@ pnpm install
 
 Requirements: Node.js 20+, pnpm 10+. The monorepo uses [Turborepo](https://turbo.build/) for orchestration, [tsup](https://tsup.egoist.dev/) for builds (ESM + CJS + DTS), and [Vitest](https://vitest.dev/) for testing.
 
+## Acknowledgments
+
+This SDK implements the [WebMCP draft specification](https://webmachinelearning.github.io/webmcp/) created by the **W3C Web Machine Learning Community Group**. We are grateful to:
+
+- **Spec Editors**: Brandon Walderman (Microsoft), Khushal Sagar (Google), Dominic Farolino (Google)
+- **Original Explainer Team**: Brandon Walderman, Leo Lee, Andrew Nolan (Microsoft); David Bokan, Khushal Sagar, Hannah Van Opstal (Google)
+- **MCP Creators**: David Soria Parra and Justin Spahr-Summers (Anthropic) for the [Model Context Protocol](https://modelcontextprotocol.io/)
+- **Chrome Tooling**: François Beaufort for the [Model Context Tool Inspector](https://github.com/beaufortfrancois/model-context-tool-inspector); GoogleChromeLabs for [webmcp-tools](https://github.com/GoogleChromeLabs/webmcp-tools)
+- **Early Implementers**: Alex Nahas (@MiguelsPizza) and Jason McGhee (@jasonjmcghee) for sharing implementation experience that informed the spec
+
+This is an independent implementation -- not affiliated with or endorsed by Google, Microsoft, Anthropic, or the W3C. See [ACKNOWLEDGMENTS.md](ACKNOWLEDGMENTS.md) for full details.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding conventions, and pull request guidelines.
