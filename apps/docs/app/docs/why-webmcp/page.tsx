@@ -4,48 +4,48 @@ import { LiveDemoSection } from './LiveDemoSection'
 export const metadata = {
   title: 'Why WebMCP? — WebMCP Registry',
   description:
-    'Stop scraping. Start calling. Learn why WebMCP matters vs web crawling for AI agents.',
+    'From simulating users to calling APIs. Learn why WebMCP matters vs web crawling for AI agents.',
 }
 
 const COMPARISON_ROWS = [
   {
     dimension: 'Purpose',
-    crawling: 'Extract unstructured content from pages',
+    crawling: 'Extract content and simulate user interactions',
     webmcp: 'Call structured, typed tools declared by the site',
   },
   {
     dimension: 'Direction',
-    crawling: 'Agent pulls data from the site',
+    crawling: 'Agent pulls data and guesses UI intent',
     webmcp: 'Site publishes capabilities for agents to invoke',
   },
   {
     dimension: 'Schema',
-    crawling: 'None \u2014 agent guesses HTML structure',
-    webmcp: 'JSON Schema with typed inputs and outputs',
+    crawling: 'AI-inferred \u2014 modern crawlers use LLMs to interpret pages',
+    webmcp: 'JSON Schema with typed inputs (spec) + safety annotations (SDK)',
   },
   {
     dimension: 'Safety',
-    crawling: 'No safety signals \u2014 agent decides on its own',
-    webmcp: 'Each tool declares read / write / danger level',
+    crawling: 'No structured safety signals from the site',
+    webmcp: 'readOnlyHint (spec) + read/write/danger levels (SDK extension)',
   },
   {
     dimension: 'Stability',
-    crawling: 'Breaks when the DOM changes',
-    webmcp: 'Stable contract \u2014 tools are versioned',
+    crawling: 'Selector-based scraping breaks on DOM changes; AI crawlers more resilient',
+    webmcp: 'Stable contract \u2014 tools are versioned and schema-defined',
   },
   {
-    dimension: 'Speed',
-    crawling: 'Seconds \u2014 render page, parse DOM, retry on failure',
-    webmcp: 'Milliseconds \u2014 direct function call',
+    dimension: 'Overhead',
+    crawling: 'Seconds of browser rendering + DOM parsing per page',
+    webmcp: 'Near-zero overhead \u2014 direct to application logic',
   },
   {
     dimension: 'Control',
-    crawling: 'Site has zero control over what gets scraped',
-    webmcp: 'Site chooses exactly what to expose',
+    crawling: 'robots.txt and auth exist, but limited control over interpretation',
+    webmcp: 'Site declares exactly what tools to expose and how',
   },
   {
     dimension: 'Examples',
-    crawling: 'Firecrawl, Exa, Jina, Playwright scraping',
+    crawling: 'Firecrawl, Exa, Jina, Playwright automation',
     webmcp: 'navigator.modelContext.getTools()',
   },
 ]
@@ -93,7 +93,7 @@ export default function WhyWebMCPPage() {
           Why WebMCP?
         </h1>
         <p className="mx-auto max-w-2xl text-xl text-[var(--text2)]">
-          Stop scraping. Start calling.
+          From simulating users to calling APIs.
         </p>
       </section>
 
@@ -102,29 +102,29 @@ export default function WhyWebMCPPage() {
         <h2 className="mb-6 text-3xl font-bold">The Problem</h2>
         <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-8">
           <p className="mb-4 text-[var(--text2)]">
-            Today, AI agents interact with websites by <strong className="text-[var(--text)]">scraping</strong> them.
-            They launch a headless browser, render the page, parse the DOM, guess what buttons do,
-            and hope the HTML structure does not change tomorrow.
+            Today, AI agents interact with websites by <strong className="text-[var(--text)]">simulating users</strong>.
+            They launch headless browsers, render pages, and use AI to interpret the DOM.
+            Modern tools like <strong className="text-[var(--text)]">Firecrawl</strong>,{' '}
+            <strong className="text-[var(--text)]">Exa</strong>, and{' '}
+            <strong className="text-[var(--text)]">Jina</strong>{' '}
+            have improved significantly &mdash; using LLMs for resilient extraction and structured data output.
           </p>
           <p className="mb-4 text-[var(--text2)]">
-            Tools like <strong className="text-[var(--text)]">Firecrawl</strong>,{' '}
-            <strong className="text-[var(--text)]">Exa</strong>,{' '}
-            <strong className="text-[var(--text)]">Jina</strong>, and{' '}
-            <strong className="text-[var(--text)]">Playwright-based scrapers</strong>{' '}
-            are popular because there is no alternative. But they share fundamental problems:
+            But even the best crawlers share fundamental limitations when it comes to
+            {' '}<strong className="text-[var(--text)]">performing actions</strong> on websites:
           </p>
           <div className="grid gap-4 md:grid-cols-3">
             <ProblemCard
-              title="Fragile"
-              description="A single CSS class rename or DOM restructure breaks the entire pipeline. Agents need constant maintenance."
+              title="Indirect"
+              description="Agents simulate clicks and form fills through the UI. Selector-based automation breaks on DOM changes; AI-based extraction adds latency and cost."
             />
             <ProblemCard
-              title="Slow"
-              description="Rendering a full page, waiting for JavaScript, then parsing takes seconds. Compare that to a direct function call."
+              title="Overhead"
+              description="Every interaction requires browser rendering, JavaScript execution, and DOM parsing. This adds 2-10 seconds of overhead per page."
             />
             <ProblemCard
-              title="No Control"
-              description="The website has zero say in what gets scraped, how it is interpreted, or what actions an agent takes."
+              title="No Declared Intent"
+              description="Sites can use robots.txt and auth, but have no structured way to declare what actions agents should take or how."
             />
           </div>
         </div>
@@ -140,16 +140,16 @@ export default function WhyWebMCPPage() {
           </p>
           <div className="grid gap-4 md:grid-cols-3">
             <SolutionCard
-              title="Typed Inputs"
+              title="Typed Inputs (W3C Spec)"
               description="Every tool has a JSON Schema defining exactly what parameters it accepts. No guessing."
             />
             <SolutionCard
-              title="Typed Outputs"
-              description="Tools return structured data, not raw HTML. Agents get clean, predictable responses."
+              title="Structured Responses"
+              description="Tools return JavaScript values, not raw HTML. The spec defines execute() callbacks that return structured data."
             />
             <SolutionCard
-              title="Safety Levels"
-              description="Each tool declares read, write, or danger. Agents know when to ask for user confirmation."
+              title="Safety Annotations"
+              description="The W3C spec provides readOnlyHint. Our SDK extends this with read/write/danger classification for richer safety signals."
             />
           </div>
         </div>
