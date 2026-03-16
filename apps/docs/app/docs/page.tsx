@@ -1,6 +1,15 @@
-export const metadata = {
-  title: 'Documentation — WebMCP Registry',
-  description: 'Learn how to make your website WebMCP-ready with the WebMCP Registry SDK.',
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Documentation — Get started with WebMCP in 5 minutes',
+  description:
+    'Quick-start guides for React, Next.js, Vue, Angular, Svelte, and plain HTML. Install the SDK, register tools, and make your website callable by AI agents.',
+  openGraph: {
+    title: 'Documentation — WebMCP Registry SDK',
+    description:
+      'Learn how to make your website WebMCP-ready. Quick-start guides for every major framework plus CLI testing tools.',
+    url: 'https://webmcpregistry.com/docs',
+  },
 }
 
 const INSTALL_SNIPPETS = [

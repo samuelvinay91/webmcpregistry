@@ -1,8 +1,17 @@
 import { DemoClient } from './DemoClient'
 
-export const metadata = {
-  title: 'Live Demo — WebMCP Registry',
-  description: 'See WebMCP tools registered on this page in real-time. This site dogfoods its own SDK.',
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Live Demo — See WebMCP tools registered in real-time',
+  description:
+    'Interactive demo of WebMCP Registry SDK. See tools registered via navigator.modelContext in real-time. This site dogfoods its own React adapter.',
+  openGraph: {
+    title: 'Live Demo — WebMCP Registry SDK in action',
+    description:
+      'See WebMCP tools registered on this page in real-time. This site dogfoods its own SDK with @webmcpregistry/react.',
+    url: 'https://webmcpregistry.com/demo',
+  },
 }
 
 export default function DemoPage() {

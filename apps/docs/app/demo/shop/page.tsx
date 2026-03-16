@@ -1,9 +1,17 @@
 import { ShopDemo } from './ShopDemo'
 
-export const metadata = {
-  title: 'Cosmic Books — WebMCP E-Commerce Demo',
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Cosmic Books — E-Commerce demo with WebMCP tools',
   description:
-    'A real bookstore demo showing how WebMCP transforms AI agent interaction. Side-by-side: raw HTML scraping vs structured tool calls.',
+    'Bookstore demo: raw HTML scraping vs WebMCP structured tool calls side-by-side. See how AI agents interact with typed, callable tools in real-time.',
+  openGraph: {
+    title: 'Cosmic Books — WebMCP E-Commerce Demo',
+    description:
+      'A real bookstore demo showing how WebMCP transforms AI agent interaction. Side-by-side comparison of scraping vs structured tool calls.',
+    url: 'https://webmcpregistry.com/demo/shop',
+  },
 }
 
 export default function ShopDemoPage() {

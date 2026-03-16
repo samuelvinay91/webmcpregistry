@@ -1,5 +1,18 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import HomeClient from './HomeClient'
+
+export const metadata: Metadata = {
+  title: 'WebMCP Registry — Make any website callable by AI agents',
+  description:
+    'Open-source SDK for the WebMCP browser standard. Register typed tools via navigator.modelContext so AI agents call your site directly. React, Vue, Angular, Svelte adapters.',
+  openGraph: {
+    title: 'WebMCP Registry — Make any website callable by AI agents',
+    description:
+      'The open-source SDK for the WebMCP browser standard. Register typed tools on your website so AI agents can discover and call them.',
+    url: 'https://webmcpregistry.com',
+  },
+}
 
 /* ------------------------------------------------------------------ */
 /*  Page (Server Component — fast initial paint for hero)              */

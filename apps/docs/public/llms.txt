@@ -1,0 +1,32 @@
+# WebMCP Registry
+> Open-source SDK for the WebMCP browser standard (W3C draft). Make any website callable by AI agents.
+
+## Documentation
+- [Getting Started](https://webmcpregistry.com/docs): Install the SDK and register your first tool in 5 minutes
+- [Why WebMCP](https://webmcpregistry.com/docs/why-webmcp): How WebMCP compares to web scraping for AI agents
+- [Live Demo](https://webmcpregistry.com/demo): See WebMCP tools running live with an interactive inspector
+- [E-Commerce Demo](https://webmcpregistry.com/demo/shop): Before/after comparison with a real bookstore
+- [Playground](https://webmcpregistry.com/playground): Build and validate tool definitions in real-time
+
+## Packages (npm @webmcpregistry/*)
+- [@webmcpregistry/core](https://www.npmjs.com/package/@webmcpregistry/core): Polyfill, detector, validator, security scanner, manifest generation
+- [@webmcpregistry/react](https://www.npmjs.com/package/@webmcpregistry/react): React hooks (useWebMCPTool, WebMCPProvider)
+- [@webmcpregistry/nextjs](https://www.npmjs.com/package/@webmcpregistry/nextjs): Next.js App Router adapter
+- [@webmcpregistry/vue](https://www.npmjs.com/package/@webmcpregistry/vue): Vue 3 plugin + composables
+- [@webmcpregistry/angular](https://www.npmjs.com/package/@webmcpregistry/angular): Angular service + provideWebMCP()
+- [@webmcpregistry/svelte](https://www.npmjs.com/package/@webmcpregistry/svelte): Svelte stores + actions
+- [@webmcpregistry/browser](https://www.npmjs.com/package/@webmcpregistry/browser): 10KB script tag bundle
+- [@webmcpregistry/cli](https://www.npmjs.com/package/@webmcpregistry/cli): CLI for test, scan, init commands
+- [@webmcpregistry/testing](https://www.npmjs.com/package/@webmcpregistry/testing): Schema-driven test generation, contract testing, mutation testing
+- [@webmcpregistry/conformance](https://www.npmjs.com/package/@webmcpregistry/conformance): W3C spec conformance test suite
+- [@webmcpregistry/evals](https://www.npmjs.com/package/@webmcpregistry/evals): AI agent tool-calling accuracy evaluation
+- [@webmcpregistry/mcp-server](https://www.npmjs.com/package/@webmcpregistry/mcp-server): MCP-to-WebMCP bridge with Playwright
+
+## Source Code
+- [GitHub Repository](https://github.com/samuelvinay91/webmcpregistry)
+- License: Apache 2.0
+- Author: RAPHATECH OU
+
+## Standards
+- [W3C WebMCP Spec](https://webmachinelearning.github.io/webmcp/): Draft Community Group Report
+- [Model Context Protocol](https://modelcontextprotocol.io/): The protocol WebMCP builds on
