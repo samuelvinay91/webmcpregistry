@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import {
   validateTools,
   runSecurityScan,
@@ -37,6 +37,12 @@ export function PlaygroundClient() {
   const [tab, setTab] = useState<Tab>('editor')
   const [validation, setValidation] = useState<ValidationResult | null>(null)
   const [security, setSecurity] = useState<SecurityReport | null>(null)
+
+  // Run validation and security on initial load
+  useEffect(() => {
+    setValidation(validateTools([DEFAULT_TOOL]))
+    setSecurity(runSecurityScan([DEFAULT_TOOL]))
+  }, [])
 
   const handleJsonChange = useCallback((value: string) => {
     setJson(value)
@@ -167,56 +173,100 @@ export function PlaygroundClient() {
       )}
 
       {/* Validation tab */}
-      {tab === 'validation' && validation && (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
-          <h3 className="mb-4 text-xl font-semibold">
-            Validation: {validation.valid ? '✓ Pass' : '✗ Fail'} ({validation.score}/100)
-          </h3>
-          {validation.issues.length === 0 ? (
-            <p className="text-[var(--grade-a)]">No issues found.</p>
-          ) : (
-            <div className="space-y-2">
-              {validation.issues.map((issue, i) => (
-                <div key={i} className={`rounded p-3 text-sm ${
-                  issue.severity === 'error' ? 'bg-[var(--grade-f)]/10 text-[var(--grade-f)]'
-                    : issue.severity === 'warning' ? 'bg-[var(--grade-c)]/10 text-[var(--grade-c)]'
-                      : 'bg-[var(--accent)]/10 text-[var(--accent)]'
+      {tab === 'validation' && (
+        <div className="glass rounded-lg border border-[var(--border)] p-6">
+          {validation ? (
+            <>
+              <div className="mb-4 flex items-center gap-3">
+                <h3 className="text-xl font-semibold">
+                  Validation: {validation.valid ? '✓ Pass' : '✗ Fail'}
+                </h3>
+                <span className={`rounded-full px-3 py-1 text-sm font-bold ${
+                  validation.score >= 80 ? 'bg-[var(--grade-a)]/20 text-[var(--grade-a)]'
+                    : validation.score >= 50 ? 'bg-[var(--grade-c)]/20 text-[var(--grade-c)]'
+                      : 'bg-[var(--grade-f)]/20 text-[var(--grade-f)]'
                 }`}>
-                  <strong>[{issue.code}]</strong> {issue.message}
+                  {validation.score}/100
+                </span>
+              </div>
+              {validation.issues.length === 0 ? (
+                <p className="text-[var(--grade-a)]">No issues found. Your tool definition looks great.</p>
+              ) : (
+                <div className="space-y-2">
+                  {validation.issues.map((issue, i) => (
+                    <div key={i} className={`hover-lift rounded-lg p-3 text-sm ${
+                      issue.severity === 'error' ? 'bg-[var(--grade-f)]/10 text-[var(--grade-f)]'
+                        : issue.severity === 'warning' ? 'bg-[var(--grade-c)]/10 text-[var(--grade-c)]'
+                          : 'bg-[var(--accent)]/10 text-[var(--accent)]'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-[var(--bg2)] px-1.5 py-0.5 font-mono text-xs">{issue.severity}</span>
+                        <strong>[{issue.code}]</strong>
+                      </div>
+                      <p className="mt-1">{issue.message}</p>
+                      {issue.field && (
+                        <p className="mt-1 text-xs opacity-60">Field: {issue.field}</p>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
+          ) : (
+            <p className="text-[var(--text3)]">Edit the tool JSON in the Editor tab to see validation results.</p>
           )}
         </div>
       )}
 
       {/* Security tab */}
-      {tab === 'security' && security && (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
-          <h3 className="mb-4 text-xl font-semibold">
-            Security: {security.status} ({security.score}/100)
-          </h3>
-          {security.findings.length === 0 ? (
-            <p className="text-[var(--grade-a)]">No security issues found.</p>
-          ) : (
-            <div className="space-y-2">
-              {security.findings.map((f, i) => (
-                <div key={i} className={`rounded p-3 text-sm ${
-                  f.severity === 'critical' || f.severity === 'high'
-                    ? 'bg-[var(--grade-f)]/10 text-[var(--grade-f)]'
-                    : 'bg-[var(--grade-c)]/10 text-[var(--grade-c)]'
+      {tab === 'security' && (
+        <div className="glass rounded-lg border border-[var(--border)] p-6">
+          {security ? (
+            <>
+              <div className="mb-4 flex items-center gap-3">
+                <h3 className="text-xl font-semibold">
+                  Security: {security.status}
+                </h3>
+                <span className={`rounded-full px-3 py-1 text-sm font-bold ${
+                  security.score >= 80 ? 'bg-[var(--grade-a)]/20 text-[var(--grade-a)]'
+                    : security.score >= 50 ? 'bg-[var(--grade-c)]/20 text-[var(--grade-c)]'
+                      : 'bg-[var(--grade-f)]/20 text-[var(--grade-f)]'
                 }`}>
-                  <strong>[{f.severity.toUpperCase()}]</strong> {f.description}
+                  {security.score}/100
+                </span>
+              </div>
+              {security.findings.length === 0 ? (
+                <p className="text-[var(--grade-a)]">No security issues found. Your tool is safe.</p>
+              ) : (
+                <div className="space-y-2">
+                  {security.findings.map((f, i) => (
+                    <div key={i} className={`hover-lift rounded-lg p-3 text-sm ${
+                      f.severity === 'critical' || f.severity === 'high'
+                        ? 'bg-[var(--grade-f)]/10 text-[var(--grade-f)]'
+                        : 'bg-[var(--grade-c)]/10 text-[var(--grade-c)]'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded bg-[var(--bg2)] px-1.5 py-0.5 font-mono text-xs uppercase">{f.severity}</span>
+                        <strong>{f.category}</strong>
+                      </div>
+                      <p className="mt-1">{f.description}</p>
+                      {f.toolName && (
+                        <p className="mt-1 text-xs opacity-60">Tool: {f.toolName}</p>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
+            </>
+          ) : (
+            <p className="text-[var(--text3)]">Edit the tool JSON in the Editor tab to see security results.</p>
           )}
         </div>
       )}
 
       {/* Manifest tab */}
       {tab === 'manifest' && !parseError && (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
+        <div className="glass rounded-lg border border-[var(--border)] p-6">
           <h3 className="mb-4 text-xl font-semibold">/.well-known/webmcp.json</h3>
           <p className="mb-4 text-sm text-[var(--text3)]">
             Host this at your site&apos;s root for AI agent discovery.
@@ -233,7 +283,7 @@ export function PlaygroundClient() {
 
       {/* JSON-LD tab */}
       {tab === 'jsonld' && !parseError && (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
+        <div className="glass rounded-lg border border-[var(--border)] p-6">
           <h3 className="mb-4 text-xl font-semibold">JSON-LD Structured Data</h3>
           <p className="mb-4 text-sm text-[var(--text3)]">
             Add this in a {'<script type="application/ld+json">'} tag for AI crawlers.
@@ -250,7 +300,7 @@ export function PlaygroundClient() {
 
       {/* llms.txt tab */}
       {tab === 'llmstxt' && !parseError && (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6">
+        <div className="glass rounded-lg border border-[var(--border)] p-6">
           <h3 className="mb-4 text-xl font-semibold">llms.txt</h3>
           <p className="mb-4 text-sm text-[var(--text3)]">
             Host this at /llms.txt for AI systems to understand your site&apos;s capabilities.

@@ -1,1 +1,5 @@
 [    1137ms] [WARNING] [WebMCP] ⚠️ No tools found to validate @ webpack-internal:///(app-pages-browser)/../../packages/core/dist/index.js:650
+[   76332ms] [WARNING] [WebMCP] ⚠️ No tools found to validate @ webpack-internal:///(app-pages-browser)/../../packages/core/dist/index.js:650
+[   79802ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3001/favicon.ico:0
+[   79822ms] [WARNING] [WebMCP] ⚠️ No tools found to validate @ webpack-internal:///(app-pages-browser)/../../packages/core/dist/index.js:650
+[   91365ms] [WARNING] Detected `scroll-behavior: smooth` on the `<html>` element. In a future version, Next.js will no longer automatically disable smooth scrolling during route transitions. To prepare for this change, add `data-scroll-behavior="smooth"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior @ webpack-internal:///(app-pages-browser)/../../node_modules/.pnpm/next@15.5.12_react-dom@19.2.4_react@19.2.4__react@19.2.4/node_modules/next/dist/shared/lib/utils/warn-once.js:15
