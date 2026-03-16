@@ -4,7 +4,7 @@
  * Wrap your app (or a subtree) with this provider to auto-register tools.
  */
 
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import {
   initialize,
   getRegisteredTools,
@@ -58,6 +58,14 @@ export function WebMCPProvider({ children, ...config }: WebMCPProviderProps) {
   })
   const initialized = useRef(false)
 
+  // Refresh tool list from the polyfill/native API
+  const refreshTools = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      tools: getRegisteredTools(),
+    }))
+  }, [])
+
   useEffect(() => {
     if (initialized.current) return
     initialized.current = true
@@ -71,6 +79,27 @@ export function WebMCPProvider({ children, ...config }: WebMCPProviderProps) {
       nativeAPI: result.nativeAPI,
       polyfilled: result.polyfilled,
     })
+
+    // Poll for tool changes from child useWebMCPTool hooks.
+    // Child hooks register tools after mount, which is after this effect runs.
+    // A short interval catches registrations from child components.
+    const timer = setInterval(() => {
+      const current = getRegisteredTools()
+      setState((prev) => {
+        if (prev.tools.length !== current.length) {
+          return { ...prev, tools: current }
+        }
+        // Also check if names changed (tool replaced)
+        const prevNames = prev.tools.map((t) => t.name).join(',')
+        const currNames = current.map((t) => t.name).join(',')
+        if (prevNames !== currNames) {
+          return { ...prev, tools: current }
+        }
+        return prev
+      })
+    }, 200)
+
+    return () => clearInterval(timer)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
