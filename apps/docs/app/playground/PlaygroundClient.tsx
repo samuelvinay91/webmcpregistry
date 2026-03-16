@@ -247,7 +247,7 @@ export function PlaygroundClient() {
                     }`}>
                       <div className="flex items-center gap-2">
                         <span className="rounded bg-[var(--bg2)] px-1.5 py-0.5 font-mono text-xs uppercase">{f.severity}</span>
-                        <strong>{f.category}</strong>
+                        <strong>{f.type}</strong>
                       </div>
                       <p className="mt-1">{f.description}</p>
                       {f.toolName && (
