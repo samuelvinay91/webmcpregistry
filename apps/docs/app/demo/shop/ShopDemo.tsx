@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { useWebMCPTool } from '@webmcpregistry/react'
+import { GlowCard, FadeInSection } from '../../../components/InteractiveEffects'
 
 /* ------------------------------------------------------------------ */
 /*  Book data                                                         */
@@ -284,6 +285,7 @@ export function ShopDemo() {
       {/* ============================================================ */}
       {/*  SIDE-BY-SIDE COMPARISON                                     */}
       {/* ============================================================ */}
+      <FadeInSection delay={0}>
       <div className="grid gap-6 lg:grid-cols-2">
         {/* ---------- LEFT: Without WebMCP ---------- */}
         <div className="relative flex flex-col">
@@ -301,7 +303,7 @@ export function ShopDemo() {
 
           {/* Card */}
           <div
-            className="flex flex-1 flex-col rounded-2xl border border-[var(--grade-f)]/20 p-1"
+            className="glow-red flex flex-1 flex-col rounded-2xl border border-[var(--grade-f)]/20 p-1"
             style={{
               background: 'linear-gradient(135deg, rgba(255,77,109,0.04) 0%, rgba(255,77,109,0.01) 100%)',
             }}
@@ -422,7 +424,7 @@ export function ShopDemo() {
 
           {/* Card with glowing border */}
           <div
-            className="flex flex-1 flex-col rounded-2xl border border-[var(--grade-a)]/30 p-1"
+            className="glow-green flex flex-1 flex-col rounded-2xl border border-[var(--grade-a)]/30 p-1"
             style={{
               background: 'linear-gradient(135deg, rgba(0,255,157,0.06) 0%, rgba(0,212,255,0.03) 100%)',
               boxShadow: '0 0 40px rgba(0,255,157,0.06), 0 0 80px rgba(0,212,255,0.03)',
@@ -554,11 +556,14 @@ export function ShopDemo() {
           </div>
         </div>
       </div>
+      </FadeInSection>
 
       {/* ============================================================ */}
       {/*  KEY DIFFERENCES                                             */}
       {/* ============================================================ */}
+      <FadeInSection delay={0.2}>
       <div className="grid gap-4 md:grid-cols-3">
+        <GlowCard>
         <DiffCard
           icon={
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -570,6 +575,8 @@ export function ShopDemo() {
           before="Scrape DOM, guess button purposes, parse CSS class names"
           after="getTools() returns a typed catalog of every available action"
         />
+        </GlowCard>
+        <GlowCard>
         <DiffCard
           icon={
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -583,6 +590,8 @@ export function ShopDemo() {
           before="Click buttons, fill forms, wait for DOM changes, pray"
           after="tool.execute(input) returns structured JSON — no DOM needed"
         />
+        </GlowCard>
+        <GlowCard>
         <DiffCard
           icon={
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -594,11 +603,14 @@ export function ShopDemo() {
           before="No way to know if an action is destructive until it's done"
           after='safetyLevel: "write" tells the agent to confirm before acting'
         />
+        </GlowCard>
       </div>
+      </FadeInSection>
 
       {/* ============================================================ */}
       {/*  TRY IT PANEL                                                */}
       {/* ============================================================ */}
+      <FadeInSection delay={0.3}>
       <div
         className="overflow-hidden rounded-2xl border border-[var(--accent)]/20"
         style={{
@@ -694,7 +706,7 @@ export function ShopDemo() {
               Tool Call Log
             </p>
             <div
-              className="min-h-[220px] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4"
+              className="glass min-h-[220px] overflow-y-auto rounded-lg border border-[var(--border)] bg-[var(--bg)] p-4"
               style={{ maxHeight: '360px' }}
             >
               {tryItLog.length === 0 ? (
@@ -742,6 +754,7 @@ export function ShopDemo() {
           </div>
         </div>
       </div>
+      </FadeInSection>
 
       {/* ============================================================ */}
       {/*  DEVTOOLS HINT                                               */}
@@ -815,7 +828,7 @@ function ExampleButton({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className="group w-full rounded-lg border border-[var(--border)] bg-[var(--bg2)] p-3 text-left transition-all hover:border-[var(--accent)]/30 hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-50"
+      className="hover-lift group w-full rounded-lg border border-[var(--border)] bg-[var(--bg2)] p-3 text-left transition-all hover:border-[var(--accent)]/30 hover:bg-[var(--surface)] disabled:cursor-not-allowed disabled:opacity-50"
     >
       <div className="mb-0.5 flex items-center gap-2">
         <span
