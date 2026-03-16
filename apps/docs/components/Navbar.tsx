@@ -8,6 +8,9 @@ export function Navbar() {
           WebMCP Registry
         </Link>
         <div className="flex gap-6 text-sm text-[var(--text2)]">
+          <Link href="/docs/why-webmcp" className="hover:text-[var(--text)] no-underline">
+            Why WebMCP?
+          </Link>
           <Link href="/docs" className="hover:text-[var(--text)] no-underline">
             Docs
           </Link>
