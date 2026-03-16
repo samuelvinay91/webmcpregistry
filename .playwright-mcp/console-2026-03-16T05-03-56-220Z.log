@@ -1,3 +1,0 @@
-[     387ms] [WARNING] [WebMCP] ⚠️ No tools found to validate @ webpack-internal:///(app-pages-browser)/../../packages/core/dist/index.js:650
-[  141561ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3001/?_rsc=fsnpp:0
-[  141977ms] [WARNING] [WebMCP] ⚠️ No tools found to validate @ webpack-internal:///(app-pages-browser)/../../packages/core/dist/index.js:650

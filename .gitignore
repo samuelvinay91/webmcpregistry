@@ -11,3 +11,19 @@ out/
 firebase-debug.log
 files.zip
 files/
+
+# Screenshots (dev/testing artifacts — not source code)
+*.png
+!apps/docs/public/og-image.png
+
+# Playwright MCP console logs
+.playwright-mcp/
+
+# Editor
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+*.swp
+*.swo
