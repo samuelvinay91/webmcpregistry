@@ -1,23 +1,65 @@
-# WebMCP Registry SDK
-
-**The open-source SDK that makes any website callable by AI agents.**
-
-[![CI](https://github.com/samuelvinay91/webmcpregistry/actions/workflows/ci.yml/badge.svg)](https://github.com/samuelvinay91/webmcpregistry/actions/workflows/ci.yml)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+<p align="center">
+  <br />
+  <strong><code>WebMCP Registry SDK</code></strong>
+  <br /><br />
+  <em>Make any website callable by AI agents.</em>
+  <br /><br />
+  <a href="https://www.npmjs.com/package/@webmcpregistry/core"><img src="https://img.shields.io/npm/v/@webmcpregistry/core?style=flat-square&label=%40webmcpregistry%2Fcore&color=0a0a0a" alt="npm version" /></a>
+  <a href="https://github.com/samuelvinay91/webmcpregistry/actions/workflows/ci.yml"><img src="https://github.com/samuelvinay91/webmcpregistry/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square" alt="License" /></a>
+</p>
 
 ---
 
-Implement the [WebMCP](https://webmachinelearning.github.io/webmcp/) browser standard in under 5 minutes. Register structured, AI-callable tools on your website with type-safe adapters for every major framework — plus a built-in polyfill, CLI testing tool, conformance test suite, and agent discovery layer.
+The WebMCP Registry SDK is a TypeScript monorepo that implements the [W3C Web Model Context Protocol](https://webmachinelearning.github.io/webmcp/) draft specification. It lets websites register structured, type-safe tools that AI agents -- Claude, ChatGPT, Gemini, Copilot -- can discover and invoke directly through `navigator.modelContext`. No DOM scraping, no custom integrations, no glue code.
 
-> **WebMCP** is a W3C Draft Community Group standard that adds `navigator.modelContext` to browsers, letting websites expose structured tools that AI agents can discover and call directly — no DOM scraping needed.
+**No browser ships WebMCP natively yet.** This SDK provides a spec-compliant polyfill that works today and steps aside when native support lands. Framework adapters for React, Vue, Angular, Svelte, and Next.js are each under 3KB. A zero-dependency `<script>` tag covers everything else.
 
-## Why This SDK?
+## Table of Contents
 
-- **No browser ships WebMCP yet** — our polyfill lets you build today, and steps aside when native support lands
-- **Every framework** — React, Next.js, Vue, Angular, Svelte, or a zero-dependency `<script>` tag
-- **Spec-aligned** — types marked `[SPEC]` vs `[EXTENSION]` so you know exactly what's standard
-- **Testing built in** — schema-driven test generation, contract testing, mutation testing, conformance suite
-- **Agent discovery** — generate `/.well-known/webmcp.json`, JSON-LD, `llms.txt`, and `agents.json`
+- [Why WebMCP?](#why-webmcp)
+- [Quick Start](#quick-start)
+- [Packages](#packages)
+- [Architecture](#architecture)
+- [Framework Examples](#framework-examples)
+- [CLI](#cli)
+- [MCP Server Bridge](#mcp-server-bridge)
+- [Testing and Quality](#testing-and-quality)
+- [Agent Discovery](#agent-discovery)
+- [Spec Alignment](#spec-alignment)
+- [Development](#development)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Why WebMCP?
+
+The [W3C WebMCP specification](https://webmachinelearning.github.io/webmcp/) (Draft Community Group Report, March 9, 2026 -- editors: Brandon Walderman/Microsoft, Khushal Sagar/Google, Dominic Farolino/Google) introduces `navigator.modelContext` to the browser platform. Instead of agents blindly scraping HTML and guessing at UI elements, websites declare what they can do:
+
+```ts
+navigator.modelContext.registerTool({
+  name: 'search_products',
+  description: 'Search the product catalog by keyword',
+  inputSchema: {
+    type: 'object',
+    properties: { query: { type: 'string' } },
+    required: ['query'],
+  },
+  execute: async (input) => {
+    return fetch(`/api/search?q=${input.query}`).then(r => r.json())
+  },
+})
+```
+
+An AI agent visiting the page discovers `search_products`, knows its schema, calls it with typed arguments, and gets structured data back. Structured, bidirectional communication between websites and AI agents, standardized at the platform level.
+
+This SDK provides:
+
+- A **polyfill** that faithfully implements `navigator.modelContext` so you can ship today
+- **Framework adapters** that manage tool lifecycle (mount/unmount) idiomatically
+- **Validation, security scanning, and grading** to ensure tool quality
+- **Manifest generation** (`/.well-known/webmcp.json`, JSON-LD, `llms.txt`, `agents.json`) for offline agent discovery
+- A **Playwright-powered MCP server** that bridges WebMCP tools into the MCP ecosystem (Claude Desktop, Cursor, VS Code)
+- **Testing infrastructure**: schema-driven test generation, contract testing, mutation testing, W3C conformance suite, and eval harness
 
 ## Quick Start
 
@@ -44,9 +86,7 @@ function SearchPage() {
     description: 'Search the product catalog by keyword',
     inputSchema: {
       type: 'object',
-      properties: {
-        query: { type: 'string', description: 'Search term' },
-      },
+      properties: { query: { type: 'string', description: 'Search term' } },
       required: ['query'],
     },
     safetyLevel: 'read',
@@ -60,25 +100,6 @@ function SearchPage() {
 }
 ```
 
-### Next.js
-
-```bash
-npm install @webmcpregistry/nextjs
-```
-
-```tsx
-// app/layout.tsx
-import { WebMCPProvider } from '@webmcpregistry/nextjs'
-
-export default function RootLayout({ children }) {
-  return (
-    <html><body>
-      <WebMCPProvider mode="auto">{children}</WebMCPProvider>
-    </body></html>
-  )
-}
-```
-
 ### Vue 3
 
 ```bash
@@ -89,18 +110,182 @@ npm install @webmcpregistry/vue
 import { createApp } from 'vue'
 import { webmcpPlugin } from '@webmcpregistry/vue'
 
-const app = createApp(App)
-app.use(webmcpPlugin, { mode: 'auto' })
-app.mount('#app')
+createApp(App).use(webmcpPlugin, { mode: 'auto' }).mount('#app')
 ```
+
+### Script Tag (zero dependencies)
+
+```html
+<script src="https://unpkg.com/@webmcpregistry/browser/dist/auto.global.js"
+        data-mode="auto"></script>
+```
+
+## Packages
+
+| Package | Description | Version |
+|:--------|:------------|:-------:|
+| [`@webmcpregistry/core`](packages/core) | Polyfill, detector, registrar, validator, security scanner, manifest generation | [![npm](https://img.shields.io/npm/v/@webmcpregistry/core?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/core) |
+| [`@webmcpregistry/react`](packages/react) | React hooks -- `useWebMCPTool`, `WebMCPProvider`, `useWebMCPContext` | [![npm](https://img.shields.io/npm/v/@webmcpregistry/react?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/react) |
+| [`@webmcpregistry/nextjs`](packages/nextjs) | Next.js App Router adapter with `'use client'` | [![npm](https://img.shields.io/npm/v/@webmcpregistry/nextjs?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/nextjs) |
+| [`@webmcpregistry/vue`](packages/vue) | Vue 3 plugin + composables | [![npm](https://img.shields.io/npm/v/@webmcpregistry/vue?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/vue) |
+| [`@webmcpregistry/angular`](packages/angular) | Angular service + `provideWebMCP()` | [![npm](https://img.shields.io/npm/v/@webmcpregistry/angular?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/angular) |
+| [`@webmcpregistry/svelte`](packages/svelte) | Svelte stores + `use:webmcpTool` action | [![npm](https://img.shields.io/npm/v/@webmcpregistry/svelte?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/svelte) |
+| [`@webmcpregistry/browser`](packages/browser) | Zero-dependency `<script>` tag bundle (IIFE) | [![npm](https://img.shields.io/npm/v/@webmcpregistry/browser?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/browser) |
+| [`@webmcpregistry/cli`](packages/cli) | CLI: `test`, `scan`, `init` commands | [![npm](https://img.shields.io/npm/v/@webmcpregistry/cli?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/cli) |
+| [`@webmcpregistry/testing`](packages/testing) | Schema-driven test generation, contract testing, mutation testing | [![npm](https://img.shields.io/npm/v/@webmcpregistry/testing?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/testing) |
+| [`@webmcpregistry/conformance`](packages/conformance) | W3C spec conformance suite (12 scenarios) | [![npm](https://img.shields.io/npm/v/@webmcpregistry/conformance?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/conformance) |
+| [`@webmcpregistry/evals`](packages/evals) | AI agent tool-calling accuracy evaluation | [![npm](https://img.shields.io/npm/v/@webmcpregistry/evals?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/evals) |
+| [`@webmcpregistry/mcp-server`](packages/mcp-server) | Playwright-powered MCP-to-WebMCP bridge | [![npm](https://img.shields.io/npm/v/@webmcpregistry/mcp-server?style=flat-square&color=0a0a0a)](https://www.npmjs.com/package/@webmcpregistry/mcp-server) |
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                          Your Application                               │
+│                                                                         │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐ │
+│  │  react   │ │   vue    │ │ angular  │ │  svelte  │ │    nextjs    │ │
+│  │  ~2KB    │ │  ~1.5KB  │ │  ~1.3KB  │ │  ~1.2KB  │ │ 'use client' │ │
+│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └──────┬───────┘ │
+│       │             │            │             │              │         │
+│       └─────────────┴────────────┴─────────────┴──────────────┘         │
+│                                  │                                      │
+│                       ┌──────────▼──────────┐                           │
+│                       │                     │    ┌─────────────────┐   │
+│                       │  @webmcpregistry/   │    │    browser      │   │
+│                       │       core          │◄───│  <script> tag   │   │
+│                       │                     │    │   IIFE bundle   │   │
+│                       │  - polyfill         │    └─────────────────┘   │
+│                       │  - registrar        │                          │
+│                       │  - detector         │                          │
+│                       │  - validator        │                          │
+│                       │  - security         │                          │
+│                       │  - manifest         │                          │
+│                       └──────────┬──────────┘                          │
+│                                  │                                      │
+│                       ┌──────────▼──────────┐                          │
+│                       │ navigator.          │                          │
+│                       │   modelContext      │                          │
+│                       │                     │                          │
+│                       │  .registerTool()   │  [SPEC]                  │
+│                       │  .unregisterTool() │  [SPEC]                  │
+│                       │  .getTools()       │  [EXTENSION]             │
+│                       └─────────────────────┘                          │
+└─────────────────────────────────────────────────────────────────────────┘
+
+  Quality & Testing                           Agent Bridge
+  ─────────────────                           ────────────
+  ┌───────────┐ ┌─────────────┐ ┌──────┐     ┌─────────────────────────┐
+  │  testing   │ │ conformance │ │ evals│     │      mcp-server         │
+  │            │ │             │ │      │     │                         │
+  │ test gen   │ │  12 W3C     │ │ tool │     │ Playwright  ──► pages   │
+  │ contracts  │ │  scenarios  │ │ sel. │     │ browser        ──► MCP  │
+  │ mutations  │ │             │ │ acc. │     │                  stdio  │
+  └───────────┘ └─────────────┘ └──────┘     └─────────────────────────┘
+                                              Claude Desktop / Cursor /
+                                              VS Code / any MCP client
+```
+
+All framework adapters are thin wrappers over `core`. They handle lifecycle (React effects, Vue `onMounted`/`onUnmounted`, Angular DI, Svelte actions) and delegate everything else. The `core` package contains the polyfill, registration engine, tool detection from DOM attributes, validation, security scanning, and manifest generation.
+
+## Framework Examples
+
+### React
+
+```tsx
+import { WebMCPProvider, useWebMCPTool } from '@webmcpregistry/react'
+
+// 1. Wrap your app with the provider
+<WebMCPProvider mode="auto">
+  <App />
+</WebMCPProvider>
+
+// 2. Register tools tied to component lifecycle
+function ProductSearch() {
+  useWebMCPTool({
+    name: 'search_products',
+    description: 'Search the product catalog by keyword and optional category',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search term' },
+        category: { type: 'string', enum: ['electronics', 'clothing', 'books'] },
+      },
+      required: ['query'],
+    },
+    safetyLevel: 'read',
+    handler: async ({ query, category }) => {
+      const params = new URLSearchParams({ q: String(query) })
+      if (category) params.set('cat', String(category))
+      return fetch(`/api/search?${params}`).then(r => r.json())
+    },
+  })
+
+  return <div>Product Search</div>
+}
+```
+
+The tool is registered when the component mounts and unregistered when it unmounts. React Strict Mode double-mounts are handled gracefully.
+
+### Next.js (App Router)
+
+```tsx
+// app/layout.tsx
+import { WebMCPProvider } from '@webmcpregistry/nextjs'
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <WebMCPProvider mode="auto">
+          {children}
+        </WebMCPProvider>
+      </body>
+    </html>
+  )
+}
+```
+
+`@webmcpregistry/nextjs` re-exports the React adapter with `'use client'` baked in. Same hooks, zero additional configuration.
+
+### Vue 3
+
+```ts
+// main.ts
+import { createApp } from 'vue'
+import { webmcpPlugin } from '@webmcpregistry/vue'
+import App from './App.vue'
+
+createApp(App).use(webmcpPlugin, { mode: 'auto' }).mount('#app')
+```
+
+```vue
+<!-- SearchPage.vue -->
+<script setup>
+import { useWebMCPTool } from '@webmcpregistry/vue'
+
+useWebMCPTool({
+  name: 'search_products',
+  description: 'Search the product catalog by keyword',
+  inputSchema: {
+    type: 'object',
+    properties: { query: { type: 'string' } },
+    required: ['query'],
+  },
+  safetyLevel: 'read',
+  handler: async ({ query }) => {
+    return fetch(`/api/search?q=${query}`).then(r => r.json())
+  },
+})
+</script>
+```
+
+Tools are registered in `onMounted` and unregistered in `onUnmounted`, matching Vue's lifecycle.
 
 ### Angular
 
-```bash
-npm install @webmcpregistry/angular
-```
-
 ```ts
+// app.config.ts
 import { provideWebMCP } from '@webmcpregistry/angular'
 
 export const appConfig = {
@@ -108,156 +293,246 @@ export const appConfig = {
 }
 ```
 
-### Svelte
+```ts
+// In any component or service
+import { getWebMCPService } from '@webmcpregistry/angular'
 
-```bash
-npm install @webmcpregistry/svelte
+const webmcp = getWebMCPService()
+webmcp.registerTool({
+  name: 'search_products',
+  description: 'Search the product catalog',
+  inputSchema: { type: 'object', properties: { query: { type: 'string' } } },
+  safetyLevel: 'read',
+  handler: async ({ query }) => fetch(`/api/search?q=${query}`).then(r => r.json()),
+})
 ```
+
+Works with both standalone components and NgModule patterns. The service creates a fresh instance per request in SSR environments to prevent cross-request contamination.
+
+### Svelte
 
 ```svelte
 <script>
   import { initWebMCP, webmcpTools } from '@webmcpregistry/svelte'
   import { onMount } from 'svelte'
+
   onMount(() => initWebMCP({ mode: 'auto' }))
 </script>
 
 <p>Registered tools: {$webmcpTools.length}</p>
 ```
 
-### HTML (no framework)
+Or bind a tool to an element's lifecycle with the `use:webmcpTool` action:
 
-```html
-<script src="https://unpkg.com/@webmcpregistry/browser/dist/auto.global.js" data-mode="auto"></script>
-```
-
-Or use declarative HTML attributes:
-
-```html
-<form toolname="search_products" tooldescription="Search the product catalog">
-  <input name="query" type="text" toolparamdescription="Search keywords" required />
+```svelte
+<form use:webmcpTool={{
+  name: 'search_products',
+  description: 'Search the product catalog',
+  inputSchema: { type: 'object', properties: { query: { type: 'string' } } },
+  safetyLevel: 'read',
+}}>
+  <input name="query" />
   <button type="submit">Search</button>
 </form>
 ```
 
-## CLI — Test Your Implementation
+### Vanilla JavaScript
 
-```bash
-# Full readiness test
-npx @webmcpregistry/cli test https://yoursite.com
+**Script tag** -- auto-detects tools from DOM attributes:
 
-# Quick static scan (no browser)
-npx @webmcpregistry/cli scan https://yoursite.com
-
-# Scaffold setup for your framework
-npx @webmcpregistry/cli init --framework react
+```html
+<script src="https://unpkg.com/@webmcpregistry/browser/dist/auto.global.js"
+        data-mode="auto"></script>
 ```
 
-The CLI produces a readiness grade (A-F) with breakdown:
+**Declarative HTML** -- no JavaScript required:
 
-```
-╔══════════════════════════════════════╗
-║  WebMCP Readiness: ● Grade A (94/100)  ║
-╚══════════════════════════════════════╝
-
-  Tool count:      ████████████████░░░░ 16/20
-  Descriptions:    ████████████████████ 23/25
-  Schema:          ████████████████████ 20/20
-  Naming:          ██████████░░░░░░░░░░ 10/10
-  Manifest:        ░░░░░░░░░░░░░░░░░░░░  0/10
-  Security:        ████████████████████ 15/15
+```html
+<form toolname="search_products"
+      tooldescription="Search the product catalog by keyword">
+  <input name="query" type="text"
+         toolparamdescription="Search keywords" required />
+  <button type="submit">Search</button>
+</form>
 ```
 
-## Packages
-
-| Package | Size | Description |
-|---------|------|-------------|
-| [`@webmcpregistry/core`](packages/core) | 23KB | Polyfill, detector, validator, security, manifest generation |
-| [`@webmcpregistry/react`](packages/react) | 2.4KB | React hooks — `useWebMCPTool`, `WebMCPProvider` |
-| [`@webmcpregistry/nextjs`](packages/nextjs) | 307B | Next.js App Router adapter |
-| [`@webmcpregistry/vue`](packages/vue) | 1.5KB | Vue 3 plugin + composables |
-| [`@webmcpregistry/angular`](packages/angular) | 1.3KB | Angular service + `provideWebMCP()` |
-| [`@webmcpregistry/svelte`](packages/svelte) | 1.2KB | Svelte stores + actions |
-| [`@webmcpregistry/browser`](packages/browser) | 10KB | Zero-dependency `<script>` tag (IIFE) |
-| [`@webmcpregistry/cli`](packages/cli) | 19KB | CLI: `test`, `scan`, `init` commands |
-| [`@webmcpregistry/testing`](packages/testing) | — | Schema-driven test gen, contract testing, mutation testing |
-| [`@webmcpregistry/conformance`](packages/conformance) | — | W3C spec conformance test suite (12 scenarios) |
-| [`@webmcpregistry/evals`](packages/evals) | — | AI agent tool-calling accuracy evaluation |
-| [`@webmcpregistry/mcp-server`](packages/mcp-server) | — | MCP-to-WebMCP tool discovery bridge |
-
-## Agent Discovery
-
-Generate machine-readable manifests so AI agents can find your tools without loading the page:
+**Core API** -- framework-agnostic:
 
 ```ts
-import { generateManifest, generateJsonLd, generateLlmsTxt } from '@webmcpregistry/core'
+import { registerTool, initialize, installPolyfill } from '@webmcpregistry/core'
 
-// /.well-known/webmcp.json — tool manifest
-const manifest = generateManifest(tools, { name: 'My Site', url: 'https://mysite.com' })
+// Auto mode: detect tools from DOM + install polyfill
+const result = initialize({ mode: 'auto' })
 
-// JSON-LD — structured data for AI crawlers
-const jsonLd = generateJsonLd(tools, { name: 'My Site', url: 'https://mysite.com' })
-
-// llms.txt — human/AI readable capabilities
-const llmsTxt = generateLlmsTxt(tools, { name: 'My Site', url: 'https://mysite.com' })
+// Or register manually
+installPolyfill()
+registerTool({
+  name: 'search_products',
+  description: 'Search the product catalog by keyword',
+  inputSchema: {
+    type: 'object',
+    properties: { query: { type: 'string' } },
+    required: ['query'],
+  },
+  safetyLevel: 'read',
+  handler: async ({ query }) => fetch(`/api/search?q=${query}`).then(r => r.json()),
+})
 ```
 
-## Testing
+## CLI
+
+The CLI tests, scans, and scaffolds WebMCP implementations without touching your source code.
+
+```bash
+# Full readiness test (launches a real browser via Playwright)
+npx @webmcpregistry/cli test https://yoursite.com
+
+# Lightweight static scan (no browser needed)
+npx @webmcpregistry/cli scan https://yoursite.com
+
+# Scaffold WebMCP setup for your framework
+npx @webmcpregistry/cli init --framework react
+npx @webmcpregistry/cli init --framework vue
+npx @webmcpregistry/cli init --framework html
+```
+
+The `test` command produces a readiness grade (A through F) with a detailed breakdown:
+
+```
++--------------------------------------+
+|  WebMCP Readiness: Grade A (94/100)  |
++--------------------------------------+
+
+  Tool count         ############----  16/20
+  Descriptions       ################  23/25
+  Schema             ################  20/20
+  Naming             ########--------  10/10
+  Manifest           ----------------   0/10
+  Security           ################  15/15
+```
+
+Output formats: `terminal` (default), `json`, `badge`.
+
+## MCP Server Bridge
+
+`@webmcpregistry/mcp-server` runs a standards-compliant [Model Context Protocol](https://modelcontextprotocol.io/) server that discovers and executes WebMCP tools from any website using a real Playwright browser. It bridges browser-side WebMCP tools into the desktop AI agent ecosystem.
+
+### Claude Desktop / Cursor / VS Code
+
+Add to your MCP client configuration:
+
+```json
+{
+  "mcpServers": {
+    "my-site": {
+      "command": "npx",
+      "args": ["@webmcpregistry/mcp-server", "--url", "https://mysite.com"]
+    }
+  }
+}
+```
+
+The server launches Chromium, navigates to the URL, discovers all tools registered via `navigator.modelContext`, and exposes them over MCP stdio. When the agent calls a tool, the server executes it in the real browser context and returns the result.
+
+**Built-in meta-tools** (always available alongside discovered tools):
+
+| Meta-tool | Purpose |
+|:----------|:--------|
+| `webmcp_rediscover` | Re-scan all URLs for new or changed tools |
+| `webmcp_validate` | Run validation + security checks on all discovered tools |
+| `webmcp_report` | Get a detailed discovery report with sources and capabilities |
+
+### Programmatic API
+
+```ts
+import { WebMCPGateway } from '@webmcpregistry/mcp-server'
+
+const gateway = new WebMCPGateway({ urls: ['https://mysite.com'] })
+
+// Discover tools
+const tools = await gateway.discover()
+console.log(`Found ${tools.length} tools`)
+
+// Execute a tool in the real browser
+const result = await gateway.callTool('search_products', { query: 'shoes' })
+console.log(result)
+
+await gateway.dispose()
+```
+
+## Testing and Quality
+
+The SDK includes three testing packages. Everything runs deterministically -- no LLM calls required.
 
 ### Schema-Driven Test Generation
 
-Auto-generate test cases from your tool's `inputSchema`:
+Auto-generate test cases from your tool's `inputSchema` covering valid inputs, invalid inputs, boundary values, type coercion, and security vectors:
 
 ```ts
 import { generateTestCases, runTestSuite } from '@webmcpregistry/testing'
 
-// Generate valid, invalid, boundary, type-coercion, and security test cases
 const cases = generateTestCases(myTool)
-console.log(`Generated ${cases.length} test cases`)
+// Generates: valid inputs, missing required fields, wrong types,
+//            empty strings, boundary values, injection attempts
 
-// Run them against your tool's handler
 const results = await runTestSuite([myTool])
 console.log(`${results.passed}/${results.total} passed`)
 ```
 
 ### Contract Testing
 
-Detect breaking changes between releases:
+Capture a snapshot of your tool definitions and detect breaking changes between releases:
 
 ```ts
 import { captureContract, diffContracts } from '@webmcpregistry/testing'
 
-const before = captureContract(oldTools, 'mysite.com')
+const before = captureContract(tools, 'mysite.com')
+// ... deploy changes ...
 const after = captureContract(newTools, 'mysite.com')
 const diff = diffContracts(before, after)
 
 if (diff.isBreaking) {
   console.error('Breaking changes:', diff.removed, diff.changed.filter(c => c.breaking))
+  process.exit(1)
 }
 ```
 
-### Conformance Testing
+### Mutation Testing
 
-Verify any `navigator.modelContext` implementation against the W3C spec:
+Verify your test suite catches real problems by introducing schema mutations:
+
+```ts
+import { generateAllMutations, calculateMutationScore } from '@webmcpregistry/testing'
+
+const mutations = generateAllMutations(tools)
+const score = await calculateMutationScore(mutations, testRunner)
+console.log(`Mutation score: ${score}%`) // Higher = better fault detection
+```
+
+### W3C Conformance Suite
+
+Run 12 scenarios that verify any `navigator.modelContext` implementation against the W3C draft spec:
 
 ```ts
 import { runConformance, formatReport } from '@webmcpregistry/conformance'
 import { installPolyfill, getModelContext } from '@webmcpregistry/core'
 
 installPolyfill()
-const report = await runConformance(getModelContext()!, 'polyfill v0.1.0')
+const report = await runConformance(getModelContext()!, 'polyfill v0.2.1')
 console.log(formatReport(report))
 // => 100% (12/12) passed
 ```
 
-### Evals — Agent Accuracy
+### Agent Evaluation
 
-Measure how well AI agents can select the right tool:
+Measure how "obvious" your tool definitions are to AI agents. The eval harness uses deterministic matching to grade tool selection accuracy -- without calling an LLM:
 
 ```ts
 import { createEvalSuite, runEvalSuite } from '@webmcpregistry/evals'
 
 const suite = createEvalSuite(tools, [
   { task: 'Find flights to Tokyo under $500', expectedTool: 'search_flights' },
+  { task: 'Book the cheapest option', expectedTool: 'book_flight' },
   { task: 'Cancel my reservation', expectedTool: 'cancel_booking' },
 ])
 
@@ -265,38 +540,38 @@ const report = runEvalSuite(suite)
 console.log(`Tool selection accuracy: ${report.selectionAccuracy}%`)
 ```
 
-## How It Works
+## Agent Discovery
 
-```
-                    Your Website
-                    ┌─────────────────────────┐
-                    │                         │
-  ┌──────────┐     │  @webmcpregistry/react   │     ┌──────────────┐
-  │ AI Agent │────►│  (or vue/angular/svelte) │────►│ Your tool    │
-  │          │     │           │              │     │ handlers     │
-  │ Claude   │     │  @webmcpregistry/core    │     │              │
-  │ ChatGPT  │◄────│  ┌─ polyfill ──────────┐ │◄────│ Return data  │
-  │ Gemini   │     │  │ navigator.           │ │     └──────────────┘
-  └──────────┘     │  │ modelContext         │ │
-                    │  │ .registerTool()     │ │
-                    │  └─────────────────────┘ │
-                    └─────────────────────────┘
-```
+Generate machine-readable manifests so AI agents can discover your tools without loading the page:
 
-1. **Install** the SDK for your framework
-2. **Register tools** — declaratively or imperatively
-3. **AI agents discover** your tools via `navigator.modelContext`
-4. **Agents call tools** with typed inputs, get structured responses
-5. **Test & validate** with the CLI, conformance suite, or evals
+```ts
+import {
+  generateManifest,
+  generateJsonLd,
+  generateLlmsTxt,
+  generateAgentsJson,
+} from '@webmcpregistry/core'
+
+const siteInfo = { name: 'My Site', url: 'https://mysite.com' }
+
+generateManifest(tools, siteInfo)   // /.well-known/webmcp.json
+generateJsonLd(tools, siteInfo)     // JSON-LD structured data
+generateLlmsTxt(tools, siteInfo)    // llms.txt for LLM crawlers
+generateAgentsJson(tools, siteInfo) // agents.json
+```
 
 ## Spec Alignment
 
-This SDK tracks the [W3C WebMCP Draft](https://webmachinelearning.github.io/webmcp/) (March 9, 2026). All types are documented:
+This SDK tracks the [W3C WebMCP Draft Community Group Report](https://webmachinelearning.github.io/webmcp/) (March 9, 2026). Every type in the codebase is explicitly tagged:
 
-- **`[SPEC]`** — matches the W3C draft exactly (`registerTool`, `unregisterTool`, `execute`, `ToolAnnotations.readOnlyHint`)
-- **`[EXTENSION]`** — our additions (`getTools()`, `safetyLevel`, `handler`, `destructiveHint`, manifest generation)
+| Tag | Meaning | Examples |
+|:----|:--------|:---------|
+| `[SPEC]` | Matches the W3C draft exactly | `registerTool`, `unregisterTool`, `execute(input, client)`, `ToolAnnotations.readOnlyHint`, `ModelContextClient` |
+| `[EXTENSION]` | SDK additions beyond the spec | `getTools()`, `safetyLevel`, `handler` (simplified `execute`), `destructiveHint`, `confirmationHint`, `idempotentHint`, manifest generation |
 
-When the spec evolves, we update. When browsers ship native support, our polyfill steps aside.
+When the spec evolves, we update. When browsers ship native `navigator.modelContext`, the polyfill detects it and defers to the native implementation.
+
+See [`packages/core/src/types.ts`](packages/core/src/types.ts) for the fully annotated type definitions.
 
 ## Development
 
@@ -304,13 +579,23 @@ When the spec evolves, we update. When browsers ship native support, our polyfil
 git clone https://github.com/samuelvinay91/webmcpregistry.git
 cd webmcpregistry
 pnpm install
-pnpm build          # Build all 13 packages
-pnpm test           # Run tests (28 passing)
-pnpm --filter @webmcpregistry/docs dev  # Docs site on localhost:3000
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full development guide.
+| Command | Description |
+|:--------|:------------|
+| `pnpm build` | Build all packages (Turborepo) |
+| `pnpm test` | Run all tests |
+| `pnpm dev` | Watch mode for all packages |
+| `pnpm --filter @webmcpregistry/core test` | Run core tests only |
+| `pnpm --filter @webmcpregistry/core build` | Build a single package |
+| `pnpm --filter @webmcpregistry/docs dev` | Docs site on localhost:3000 |
+
+Requirements: Node.js 20+, pnpm 10+. The monorepo uses [Turborepo](https://turbo.build/) for orchestration, [tsup](https://tsup.egoist.dev/) for builds (ESM + CJS + DTS), and [Vitest](https://vitest.dev/) for testing.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding conventions, and pull request guidelines.
 
 ## License
 
-[Apache 2.0](LICENSE) — RAPHATECH OÜ
+[Apache 2.0](LICENSE) -- RAPHATECH OU
